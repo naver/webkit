@@ -232,6 +232,9 @@ struct Extensions
     // GL_EXT_frag_depth
     bool fragDepth;
 
+    // GL_ANGLE_texture_d3d
+    bool textureD3D;
+
     // GL_ANGLE_texture_usage
     bool textureUsage;
 

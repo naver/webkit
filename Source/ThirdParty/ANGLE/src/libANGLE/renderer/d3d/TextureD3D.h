@@ -25,6 +25,7 @@ class ImageD3D;
 class RendererD3D;
 class RenderTargetD3D;
 class TextureStorage;
+enum RendererClass;
 
 class TextureD3D : public TextureImpl
 {
@@ -59,6 +60,7 @@ class TextureD3D : public TextureImpl
     virtual bool isValidIndex(const gl::ImageIndex &index) const = 0;
 
     gl::Error generateMipmaps(const gl::TextureState &textureState) override;
+    gl::Error queryAttrib(GLint attribute, void **value) override;
     TextureStorage *getStorage();
     ImageD3D *getBaseLevelImage() const;
 
@@ -113,6 +115,8 @@ class TextureD3D : public TextureImpl
     bool shouldUseSetData(const ImageD3D *image) const;
 
     gl::Error generateMipmapsUsingImages();
+
+    template <RendererClass, typename, typename> gl::Error queryAttrib(void **value);
 };
 
 class TextureD3D_2D : public TextureD3D

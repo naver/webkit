@@ -865,10 +865,21 @@ GL_APICALL void GL_APIENTRY glVertexAttribDivisorANGLE (GLuint index, GLuint div
 #define GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE 0x83F3
 #endif /* GL_ANGLE_texture_compression_dxt5 */
 
+#ifndef GL_ANGLE_texture_d3d
+#define GL_ANGLE_texture_d3d 1
+#define GL_TEXTURE_D3D9_ANGLE             0xE000
+#define GL_TEXTURE_D3D11_ANGLE            0xE001
+typedef GLboolean (GL_APIENTRYP PFNGLQUERYTEXTUREATTRIBEXTPROC) (GLenum target, GLint attribute, void **value);
+#ifdef GL_GLEXT_PROTOTYPES
+EGLAPI GLboolean GL_APIENTRY glQueryTextureAttribEXT (GLenum target, GLint attribute, void **value);
+#endif
+#endif /* GL_ANGLE_texture_d3d */
+
 #ifndef GL_ANGLE_texture_usage
 #define GL_ANGLE_texture_usage 1
 #define GL_TEXTURE_USAGE_ANGLE            0x93A2
 #define GL_FRAMEBUFFER_ATTACHMENT_ANGLE   0x93A3
+#define GL_RENDERTARGET_D2D_ANGLE         0x93A5
 #endif /* GL_ANGLE_texture_usage */
 
 #ifndef GL_ANGLE_translated_shader_source

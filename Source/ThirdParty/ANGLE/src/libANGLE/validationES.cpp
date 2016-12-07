@@ -899,6 +899,7 @@ bool ValidateTexParamParameters(gl::Context *context, GLenum pname, GLint param)
         {
           case GL_NONE:
           case GL_FRAMEBUFFER_ATTACHMENT_ANGLE:
+          case GL_RENDERTARGET_D2D_ANGLE:
             return true;
           default:
             context->recordError(Error(GL_INVALID_ENUM));

@@ -568,6 +568,7 @@ void GenerateCaps(IDirect3D9 *d3d9,
     extensions->standardDerivatives = (deviceCaps.PS20Caps.Caps & D3DPS20CAPS_GRADIENTINSTRUCTIONS) != 0;
     extensions->shaderTextureLOD = true;
     extensions->fragDepth = true;
+    extensions->textureD3D = true;
     extensions->textureUsage = true;
     extensions->translatedShaderSource = true;
     extensions->fboRenderMipmap = false;

@@ -675,6 +675,11 @@ egl::Error Renderer11::initialize()
     return egl::Error(EGL_SUCCESS);
 }
 
+static const UINT D3D11CreateDeviceFlags(UINT Flags)
+{
+    return Flags | D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
+}
+
 egl::Error Renderer11::initializeD3DDevice()
 {
     HRESULT result = S_OK;
@@ -713,7 +718,7 @@ egl::Error Renderer11::initializeD3DDevice()
         {
             TRACE_EVENT0("gpu.angle", "D3D11CreateDevice (Debug)");
             result = D3D11CreateDevice(nullptr, mRequestedDriverType, nullptr,
-                                       D3D11_CREATE_DEVICE_DEBUG, mAvailableFeatureLevels.data(),
+                                       D3D11CreateDeviceFlags(D3D11_CREATE_DEVICE_DEBUG), mAvailableFeatureLevels.data(),
                                        static_cast<unsigned int>(mAvailableFeatureLevels.size()),
                                        D3D11_SDK_VERSION, &mDevice,
                                        &(mRenderer11DeviceCaps.featureLevel), &mDeviceContext);
@@ -731,7 +736,7 @@ egl::Error Renderer11::initializeD3DDevice()
             TRACE_EVENT0("gpu.angle", "D3D11CreateDevice");
 
             result = D3D11CreateDevice(
-                nullptr, mRequestedDriverType, nullptr, 0, mAvailableFeatureLevels.data(),
+                nullptr, mRequestedDriverType, nullptr, D3D11CreateDeviceFlags(0), mAvailableFeatureLevels.data(),
                 static_cast<unsigned int>(mAvailableFeatureLevels.size()), D3D11_SDK_VERSION,
                 &mDevice, &(mRenderer11DeviceCaps.featureLevel), &mDeviceContext);
 

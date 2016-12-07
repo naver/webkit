@@ -212,6 +212,7 @@ std::vector<std::string> Extensions::getStrings() const
     InsertExtensionString("GL_ARM_shader_framebuffer_fetch",     ARMshaderFramebufferFetch, &extensionStrings);
     InsertExtensionString("GL_EXT_shader_framebuffer_fetch",     shaderFramebufferFetch,    &extensionStrings);
     InsertExtensionString("GL_EXT_frag_depth",                   fragDepth,                 &extensionStrings);
+    InsertExtensionString("GL_ANGLE_texture_d3d",                textureD3D,                &extensionStrings);
     InsertExtensionString("GL_ANGLE_texture_usage",              textureUsage,              &extensionStrings);
     InsertExtensionString("GL_ANGLE_translated_shader_source",   translatedShaderSource,    &extensionStrings);
     InsertExtensionString("GL_OES_fbo_render_mipmap",            fboRenderMipmap,           &extensionStrings);

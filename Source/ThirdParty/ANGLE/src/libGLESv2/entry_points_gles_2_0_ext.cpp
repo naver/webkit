@@ -670,6 +670,34 @@ void GL_APIENTRY TexStorage2DEXT(GLenum target, GLsizei levels, GLenum internalf
     }
 }
 
+GLboolean GL_APIENTRY QueryTextureAttribEXT(GLenum target, GLint attribute, void **value)
+{
+    EVENT("(GLenum target = 0x%X, GLint attribute = %d, value = 0x%0.8p)", target, attribute, value);
+
+    Context *context = GetValidGlobalContext();
+    if (context)
+    {
+        if (!context->getExtensions().textureD3D)
+        {
+            context->recordError(Error(EGL_BAD_ACCESS));
+            return GL_FALSE;
+        }
+
+        Texture *texture = context->getTargetTexture(target);
+        if (texture)
+        {
+            Error error = texture->queryAttrib(attribute, value);
+            if (error.isError())
+            {
+                context->recordError(error);
+                return GL_FALSE;
+            }
+        }
+    }
+
+    return GL_TRUE;
+}
+
 void GL_APIENTRY VertexAttribDivisorANGLE(GLuint index, GLuint divisor)
 {
     EVENT("(GLuint index = %d, GLuint divisor = %d)", index, divisor);

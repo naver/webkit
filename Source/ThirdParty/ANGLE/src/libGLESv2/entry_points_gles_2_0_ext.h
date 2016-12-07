@@ -34,6 +34,9 @@ ANGLE_EXPORT void GL_APIENTRY GetFenceivNV(GLuint fence, GLenum pname, GLint *pa
 ANGLE_EXPORT void GL_APIENTRY FinishFenceNV(GLuint fence);
 ANGLE_EXPORT void GL_APIENTRY SetFenceNV(GLuint fence, GLenum condition);
 
+// GL_ANGLE_texture_d3d
+ANGLE_EXPORT GLboolean GL_APIENTRY QueryTextureAttribEXT(GLenum target, GLint attribute, void **value);
+
 // GL_ANGLE_translated_shader_source
 ANGLE_EXPORT void GL_APIENTRY GetTranslatedShaderSourceANGLE(GLuint shader, GLsizei bufsize, GLsizei *length, GLchar *source);
 

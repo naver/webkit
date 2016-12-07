@@ -26,6 +26,10 @@
 #include "libANGLE/renderer/d3d/SurfaceD3D.h"
 #include "libANGLE/renderer/d3d/TextureStorage.h"
 
+#if defined(ANGLE_ENABLE_D3D11)
+#include "libANGLE/renderer/d3d/d3d11/TextureStorage11.h"
+#endif
+
 namespace rx
 {
 
@@ -70,7 +74,7 @@ gl::Error GetUnpackPointer(const gl::PixelUnpackState &unpack, const uint8_t *pi
 
 bool IsRenderTargetUsage(GLenum usage)
 {
-    return (usage == GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+    return (usage == GL_FRAMEBUFFER_ATTACHMENT_ANGLE) || (usage == GL_RENDERTARGET_D2D_ANGLE);;
 }
 
 }
@@ -345,6 +349,11 @@ gl::Error TextureD3D::fastUnpackPixels(const gl::PixelUnpackState &unpack, const
 
 GLint TextureD3D::creationLevels(GLsizei width, GLsizei height, GLsizei depth) const
 {
+    if (mUsage == GL_RENDERTARGET_D2D_ANGLE)
+    {
+        return 1;
+    }
+
     if ((gl::isPow2(width) && gl::isPow2(height) && gl::isPow2(depth)) || mRenderer->getRendererExtensions().textureNPOT)
     {
         // Maximum number of levels
@@ -537,6 +546,57 @@ bool TextureD3D::isBaseImageZeroSize() const
     }
 
     return false;
+}
+
+gl::Error TextureD3D::queryAttrib(GLint attribute, void **value)
+{
+    switch (attribute)
+    {
+      case GL_TEXTURE_D3D11_ANGLE:
+        {
+            return queryAttrib<RENDERER_D3D11, TextureStorage11, ID3D11Resource>(value);
+        }
+      default:
+        {
+            break;
+        }
+    }
+
+    return gl::Error(GL_INVALID_ENUM);
+}
+
+template <RendererClass rendererClass, typename TextureStorageClass, typename ResourceClass>
+gl::Error TextureD3D::queryAttrib(void **value)
+{
+    if (mRenderer->getRendererClass() != rendererClass)
+    {
+        return gl::Error(GL_INVALID_OPERATION);
+    }
+
+    TextureStorage* texStorage;
+    gl::Error error(GL_NO_ERROR);
+    if (IsRenderTargetUsage(mUsage))
+    {
+        error = ensureRenderTarget();
+        texStorage = getStorage();
+    }
+    else
+    {
+        error = getNativeTexture(&texStorage);
+    }
+
+    if (error.isError())
+    {
+        return error;
+    }
+
+    error = static_cast<TextureStorageClass *>(texStorage)->getResource(reinterpret_cast<ResourceClass **>(value));
+    if (error.isError())
+    {
+        return error;
+    }
+
+    return gl::Error(GL_NO_ERROR);
 }
 
 gl::Error TextureD3D::ensureRenderTarget()

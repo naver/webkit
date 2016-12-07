@@ -165,6 +165,8 @@ class Texture final : public egl::ImageSibling,
 
     Error generateMipmaps();
 
+    Error queryAttrib(GLint attribute, void **value);
+
     egl::Surface *getBoundSurface() const;
 
     rx::TextureImpl *getImplementation() { return mTexture; }

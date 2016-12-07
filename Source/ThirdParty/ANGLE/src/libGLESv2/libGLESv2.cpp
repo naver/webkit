@@ -1295,6 +1295,11 @@ void GL_APIENTRY glSetFenceNV(GLuint fence, GLenum condition)
     return gl::SetFenceNV(fence, condition);
 }
 
+GLboolean GL_APIENTRY glQueryTextureAttribEXT(GLenum target, GLint attribute, void **value)
+{
+    return gl::QueryTextureAttribEXT(target, attribute, value);
+}
+
 void GL_APIENTRY glGetTranslatedShaderSourceANGLE(GLuint shader, GLsizei bufsize, GLsizei *length, GLchar *source)
 {
     return gl::GetTranslatedShaderSourceANGLE(shader, bufsize, length, source);

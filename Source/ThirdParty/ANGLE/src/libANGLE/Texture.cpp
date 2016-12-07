@@ -524,6 +524,11 @@ Error Texture::generateMipmaps()
     return Error(GL_NO_ERROR);
 }
 
+Error Texture::queryAttrib(GLint attribute, void **value)
+{
+    return mTexture->queryAttrib(attribute, value);
+}
+
 void Texture::setImageDescChain(size_t levels, Extents baseSize, GLenum sizedInternalFormat)
 {
     for (int level = 0; level < static_cast<int>(levels); level++)
