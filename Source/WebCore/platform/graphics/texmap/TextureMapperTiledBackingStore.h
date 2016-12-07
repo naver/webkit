@@ -41,16 +41,16 @@ public:
     void drawRepaintCounter(TextureMapper&, int repaintCount, const Color&, const FloatRect&, const TransformationMatrix&) override;
 
     void updateContentsScale(float);
-    void updateContents(TextureMapper&, Image*, const FloatSize&, const IntRect&, BitmapTexture::UpdateContentsFlag);
     void updateContents(TextureMapper&, GraphicsLayer*, const FloatSize&, const IntRect&, BitmapTexture::UpdateContentsFlag);
 
-    void setContentsToImage(Image* image) { m_image = image; }
+    void setContentsToImage(Image* image) { m_image = image; m_size = image ? image->size() : FloatSize(); }
 
 private:
     TextureMapperTiledBackingStore() { }
 
-    void createOrDestroyTilesIfNeeded(const FloatSize& backingStoreSize, const IntSize& tileSize, bool hasAlpha);
-    void updateContentsFromImageIfNeeded(TextureMapper&);
+    void createOrDestroyTilesIfNeeded(TextureMapper&, const FloatRect&, const TransformationMatrix&, const IntSize&, bool);
+    void updateContentsFromImageIfNeeded(TextureMapper&, const FloatRect&, const TransformationMatrix&);
+    void updateContentsFromLayerIfNeeded(TextureMapper&, const FloatRect&, const TransformationMatrix&);
     TransformationMatrix adjustedTransformForRect(const FloatRect&);
     inline FloatRect rect() const
     {
@@ -62,8 +62,14 @@ private:
     Vector<TextureMapperTile> m_tiles;
     FloatSize m_size;
     RefPtr<Image> m_image;
+    GraphicsLayer* m_sourceLayer { nullptr };
+    IntRect m_dirtyRect;
+    BitmapTexture::UpdateContentsFlag m_updateContentsFlag { BitmapTexture::UpdateCannotModifyOriginalImageData };
     float m_contentsScale { 1 };
     bool m_isScaleDirty { false };
+    bool m_isSizeDirty { false };
+    FloatRect m_visibleRect;
+    FloatRect m_coverRect;
 };
 
 } // namespace WebCore

@@ -43,7 +43,7 @@ void TextureMapperTile::updateContents(TextureMapper& textureMapper, Image* imag
     targetRect.move(-m_rect.x(), -m_rect.y());
     if (!m_texture) {
         m_texture = textureMapper.createTexture();
-        m_texture->reset(targetRect.size(), image->currentFrameKnownToBeOpaque() ? 0 : BitmapTexture::SupportsAlpha);
+        m_texture->reset(IntSize(m_rect.size()), image->currentFrameKnownToBeOpaque() ? 0 : BitmapTexture::SupportsAlpha);
     }
 
     m_texture->updateContents(image, targetRect, sourceOffset, updateContentsFlag);
@@ -62,7 +62,7 @@ void TextureMapperTile::updateContents(TextureMapper& textureMapper, GraphicsLay
 
     if (!m_texture) {
         m_texture = textureMapper.createTexture();
-        m_texture->reset(targetRect.size(), BitmapTexture::SupportsAlpha);
+        m_texture->reset(IntSize(m_rect.size()), BitmapTexture::SupportsAlpha);
     }
 
     m_texture->updateContents(textureMapper, sourceLayer, targetRect, sourceOffset, updateContentsFlag, scale);
