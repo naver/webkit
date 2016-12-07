@@ -855,8 +855,6 @@ bool WebView::ensureBackingStore()
 
 void WebView::addToDirtyRegion(const IntRect& dirtyRect)
 {
-    m_needsDisplay = true;
-
     // FIXME: We want an assert here saying that the dirtyRect is inside the clienRect,
     // but it was being hit during our layout tests, and is being investigated in
     // http://webkit.org/b/29350.
@@ -869,6 +867,8 @@ void WebView::addToDirtyRegion(const IntRect& dirtyRect)
 #endif
         return;
     }
+
+    m_needsDisplay = true;
 
     auto newRegion = adoptGDIObject(::CreateRectRgn(dirtyRect.x(), dirtyRect.y(),
         dirtyRect.maxX(), dirtyRect.maxY()));
@@ -896,8 +896,6 @@ void WebView::addToDirtyRegion(GDIObject<HRGN> newRegion)
 
 void WebView::scrollBackingStore(FrameView* frameView, int logicalDx, int logicalDy, const IntRect& logicalScrollViewRect, const IntRect& logicalClipRect)
 {
-    m_needsDisplay = true;
-
     // Dimensions passed to us from WebCore are in logical units. We must convert to pixels:
     float scaleFactor = deviceScaleFactor();
     int dx = clampTo<int>(scaleFactor * logicalDx);
@@ -918,6 +916,8 @@ void WebView::scrollBackingStore(FrameView* frameView, int logicalDx, int logica
 #endif
         return;
     }
+
+    m_needsDisplay = true;
 
     LOCAL_GDI_COUNTER(0, __FUNCTION__);
 
@@ -971,8 +971,6 @@ void WebView::scrollBackingStore(FrameView* frameView, int logicalDx, int logica
 
 void WebView::sizeChanged(const IntSize& newSize)
 {
-    m_needsDisplay = true;
-
     deleteBackingStore();
 
     if (Frame* coreFrame = core(topLevelFrame())) {
@@ -2658,6 +2656,7 @@ void WebView::updateWindowIfNeeded(HWND hWnd, UINT message)
 
     switch (message) {
     case WM_PAINT:
+    case WM_NCPAINT:
     case WM_PARENTNOTIFY:
         return;
     }
@@ -5262,6 +5261,17 @@ HRESULT WebView::notifyPreferencesChanged(IWebNotification* notification)
     enabled = enabled && acceleratedCompositingAvailable;
 #endif
     settings.setAcceleratedCompositingEnabled(enabled);
+#if USE(TEXTURE_MAPPER_GL)
+    setAcceleratedCompositing(enabled);
+    setRootChildLayer(nullptr);
+#endif
+
+#if ENABLE(ACCELERATED_2D_CANVAS)
+    settings.setAcceleratedCompositedAnimationsEnabled(enabled);
+    settings.setAcceleratedCompositingForOverflowScrollEnabled(enabled);
+    settings.setAccelerated2dCanvasEnabled(enabled);
+    settings.setMinimumAccelerated2dCanvasSize(10000);
+#endif
 
     hr = prefsPrivate->showDebugBorders(&enabled);
     if (FAILED(hr))
@@ -6909,8 +6919,8 @@ void WebView::downloadURL(const URL& url)
 
 void WebView::setRootChildLayer(GraphicsLayer* layer)
 {
-    setAcceleratedCompositing(layer ? true : false);
 #if USE(CA)
+    setAcceleratedCompositing(layer ? true : false);
     if (!m_backingLayer)
         return;
     m_backingLayer->addChild(layer);
@@ -6989,6 +6999,8 @@ void WebView::setAcceleratedCompositing(bool accelerated)
     if (accelerated && !m_acceleratedCompositingContext)
         m_acceleratedCompositingContext = std::make_unique<AcceleratedCompositingContext>(*this);
     m_isAcceleratedCompositing = accelerated;
+    if (m_isAcceleratedCompositing)
+        m_needsDisplay = false;
 #endif
 }
 

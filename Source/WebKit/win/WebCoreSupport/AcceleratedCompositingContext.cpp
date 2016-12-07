@@ -197,21 +197,14 @@ void AcceleratedCompositingContext::setRootCompositingLayer(GraphicsLayer* graph
 {
     prepareForRendering();
 
-    if (!graphicsLayer) {
-        stopAnyPendingLayerFlush();
-        m_rootLayer = nullptr;
-        m_nonCompositedContentLayer = nullptr;
-        m_textureMapper = nullptr;
-        return;
-    }
-
     // Add the accelerated layer tree hierarchy.
     initialize();
     if (!m_window)
         return;
 
     m_nonCompositedContentLayer->removeAllChildren();
-    m_nonCompositedContentLayer->addChild(graphicsLayer);
+    if (graphicsLayer)
+        m_nonCompositedContentLayer->addChild(graphicsLayer);
 
     stopAnyPendingLayerFlush();
 
@@ -266,6 +259,36 @@ void AcceleratedCompositingContext::scrollNonCompositedContents(const IntRect& s
     scheduleLayerFlush();
 }
 
+// Detecting the Remote Desktop Services environment
+// https://msdn.microsoft.com/en-us/library/aa380798(v=vs.85).aspx
+static bool isRemoteSession()
+{
+	static const wchar_t* TerminalServerKey = L"SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\";
+	static const wchar_t* GlassSessionId = L"GlassSessionId";
+
+	if (::GetSystemMetrics(SM_REMOTESESSION))
+		return true;
+
+	HKEY registryKey = NULL;
+	if (FAILED(::RegOpenKeyEx(HKEY_LOCAL_MACHINE, TerminalServerKey, 0, KEY_READ, &registryKey)))
+		return false;
+
+	DWORD glassSessionId;
+	DWORD glassSessionIdSize = sizeof(glassSessionId);
+	DWORD registryValueType;
+
+	bool result = false;
+
+	if (SUCCEEDED(::RegQueryValueEx(registryKey, GlassSessionId, NULL, &registryValueType, (BYTE*)&glassSessionId, &glassSessionIdSize))) {
+		DWORD currentSessionId;
+		if (::ProcessIdToSessionId(GetCurrentProcessId(), &currentSessionId))
+			result = (currentSessionId != glassSessionId);
+	}
+
+	::RegCloseKey(registryKey);
+	return result;
+}
+
 bool AcceleratedCompositingContext::acceleratedCompositingAvailable()
 {
     const int width = 10;
@@ -275,8 +298,10 @@ bool AcceleratedCompositingContext::acceleratedCompositingAvailable()
     if (windowsVersion() < Windows7)
         return false;
 
+	bool remoteSession = isRemoteSession();
+
     // Create test window to render texture in.
-    HWND testWindow = ::CreateWindowEx(WS_EX_NOACTIVATE, defWndProcWindowClassName(), L"AcceleratedCompositingTesterWindow", WS_POPUP | WS_VISIBLE | WS_DISABLED, -width, -height, width, height, 0, 0, 0, 0);
+    HWND testWindow = ::CreateWindowEx(WS_EX_NOACTIVATE, defWndProcWindowClassName(), L"AcceleratedCompositingTesterWindow", WS_POPUP | WS_VISIBLE | WS_DISABLED, remoteSession ? 0 : -width, remoteSession ? 0 : -height, width, height, 0, 0, 0, 0);
 
     if (!testWindow)
         return false;
