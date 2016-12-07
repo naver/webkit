@@ -58,7 +58,11 @@ SlowPathCallContext::SlowPathCallContext(
         
     m_offsetToSavingArea =
         (std::max(m_numArgs, NUMBER_OF_ARGUMENT_REGISTERS) - NUMBER_OF_ARGUMENT_REGISTERS) * wordSize;
-        
+
+#if OS(WINDOWS)
+    m_offsetToSavingArea = std::max(m_offsetToSavingArea, maxFrameExtentForSlowPathCall);
+#endif
+
     for (unsigned i = std::min(NUMBER_OF_ARGUMENT_REGISTERS, numArgs); i--;)
         m_argumentRegisters.set(GPRInfo::toArgumentRegister(i));
     m_callingConventionRegisters.merge(m_argumentRegisters);
@@ -120,7 +124,11 @@ SlowPathCallKey SlowPathCallContext::keyWithTarget(void* callTarget) const
 
 SlowPathCall SlowPathCallContext::makeCall(void* callTarget)
 {
+#if OS(WINDOWS)
+    SlowPathCall result = SlowPathCall(m_jit.callJIT(), keyWithTarget(callTarget));
+#else
     SlowPathCall result = SlowPathCall(m_jit.call(), keyWithTarget(callTarget));
+#endif
 
     m_jit.addLinkTask(
         [result] (LinkBuffer& linkBuffer) {

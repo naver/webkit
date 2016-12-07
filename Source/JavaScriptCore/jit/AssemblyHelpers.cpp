@@ -337,8 +337,7 @@ void AssemblyHelpers::callExceptionFuzz()
 #else
     move(GPRInfo::callFrameRegister, GPRInfo::argumentGPR0);
 #endif
-    move(TrustedImmPtr(bitwise_cast<void*>(operationExceptionFuzz)), GPRInfo::nonPreservedNonReturnGPR);
-    call(GPRInfo::nonPreservedNonReturnGPR);
+    cCall(bitwise_cast<void*>(operationExceptionFuzz), GPRInfo::nonPreservedNonReturnGPR);
 
     for (unsigned i = 0; i < FPRInfo::numberOfRegisters; ++i) {
         move(TrustedImmPtr(buffer + GPRInfo::numberOfRegisters + i), GPRInfo::regT0);

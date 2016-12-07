@@ -338,8 +338,7 @@ static void compileStub(
             jit.setupArgumentsWithExecState(
                 CCallHelpers::TrustedImmPtr(materialization),
                 CCallHelpers::TrustedImmPtr(materializationArguments));
-            jit.move(CCallHelpers::TrustedImmPtr(bitwise_cast<void*>(operationMaterializeObjectInOSR)), GPRInfo::nonArgGPR0);
-            jit.call(GPRInfo::nonArgGPR0);
+            jit.cCall(bitwise_cast<void*>(operationMaterializeObjectInOSR), GPRInfo::nonArgGPR0);
             jit.storePtr(GPRInfo::returnValueGPR, materializationToPointer.get(materialization));
 
             // Let everyone know that we're done.
@@ -366,8 +365,7 @@ static void compileStub(
             CCallHelpers::TrustedImmPtr(materialization),
             CCallHelpers::TrustedImmPtr(materializationToPointer.get(materialization)),
             CCallHelpers::TrustedImmPtr(materializationArguments));
-        jit.move(CCallHelpers::TrustedImmPtr(bitwise_cast<void*>(operationPopulateObjectInOSR)), GPRInfo::nonArgGPR0);
-        jit.call(GPRInfo::nonArgGPR0);
+        jit.cCall(bitwise_cast<void*>(operationPopulateObjectInOSR), GPRInfo::nonArgGPR0);
     }
 
     // Save all state from wherever the exit data tells us it was, into the appropriate place in

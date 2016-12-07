@@ -1025,8 +1025,7 @@ public:
 #else
 #error "JIT not supported on this platform."
 #endif
-        move(TrustedImmPtr(reinterpret_cast<void*>(function)), scratch);
-        call(scratch);
+        cCall(reinterpret_cast<void*>(function), scratch);
 
         move(TrustedImmPtr(scratchBuffer->activeLengthPtr()), GPRInfo::regT0);
         storePtr(TrustedImmPtr(0), GPRInfo::regT0);
@@ -1390,7 +1389,19 @@ public:
     void emitRandomThunk(JSGlobalObject*, GPRReg scratch0, GPRReg scratch1, GPRReg scratch2, FPRReg result);
     void emitRandomThunk(GPRReg scratch0, GPRReg scratch1, GPRReg scratch2, GPRReg scratch3, FPRReg result);
 #endif
-    
+
+    ALWAYS_INLINE void cCall(void* function, GPRReg scratch)
+    {
+        move(TrustedImmPtr(bitwise_cast<void*>(function)), scratch);
+#if OS(WINDOWS) && CPU(X86_64)
+        sub64(TrustedImm32(4 * sizeof(int64_t)), X86Registers::esp);
+#endif
+        call(scratch);
+#if OS(WINDOWS) && CPU(X86_64)
+        add64(TrustedImm32(4 * sizeof(int64_t)), X86Registers::esp);
+#endif
+    }
+ 
 protected:
     VM* m_vm;
     CodeBlock* m_codeBlock;

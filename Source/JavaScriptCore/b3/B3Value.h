@@ -437,7 +437,7 @@ private:
     Origin m_origin;
     AdjacencyList m_children;
 
-    JS_EXPORT_PRIVATE NO_RETURN_DUE_TO_CRASH static void badOpcode(Opcode, unsigned);
+    static void badOpcode(Opcode, unsigned);
 
 public:
     BasicBlock* owner { nullptr }; // computed by Procedure::resetValueOwners().

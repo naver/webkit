@@ -5416,8 +5416,16 @@ private:
                 RELEASE_ASSERT(!allocator.numberOfReusedRegisters());
 
                 auto callWithExceptionCheck = [&] (void* callee) {
+#if OS(WINDOWS)
+                    // On Windows, use the call() method, since it includes some Win64 calling convention fixes we need.
+                    CCallHelpers::Call call = jit.call();
+                    jit.addLinkTask([=](LinkBuffer& linkBuffer) {
+                        linkBuffer.link(call, FunctionPtr(callee));
+                    });
+#else
                     jit.move(CCallHelpers::TrustedImmPtr(callee), GPRInfo::nonPreservedNonArgumentGPR);
                     jit.call(GPRInfo::nonPreservedNonArgumentGPR);
+#endif
                     exceptions->append(jit.emitExceptionCheck(AssemblyHelpers::NormalExceptionCheck, AssemblyHelpers::FarJumpWidth));
                 };
 

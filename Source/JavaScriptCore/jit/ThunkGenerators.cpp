@@ -68,9 +68,7 @@ MacroAssemblerCodeRef throwExceptionFromCallSlowPathGenerator(VM* vm)
     jit.copyCalleeSavesToVMEntryFrameCalleeSavesBuffer();
 
     jit.setupArguments(CCallHelpers::TrustedImmPtr(vm), GPRInfo::callFrameRegister);
-    jit.move(CCallHelpers::TrustedImmPtr(bitwise_cast<void*>(lookupExceptionHandler)), GPRInfo::nonArgGPR0);
-    emitPointerValidation(jit, GPRInfo::nonArgGPR0);
-    jit.call(GPRInfo::nonArgGPR0);
+    jit.cCall(bitwise_cast<void*>(lookupExceptionHandler), GPRInfo::nonArgGPR0);
     jit.jumpToExceptionHandler();
 
     LinkBuffer patchBuffer(*vm, jit, GLOBAL_THUNK_ID);
