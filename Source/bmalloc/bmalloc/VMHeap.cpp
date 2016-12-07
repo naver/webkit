@@ -23,6 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
+#include "BPlatform.h"
 #include "PerProcess.h"
 #include "VMHeap.h"
 #include <thread>

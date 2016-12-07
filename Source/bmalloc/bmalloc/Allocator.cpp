@@ -37,6 +37,21 @@ using namespace std;
 
 namespace bmalloc {
 
+#if !BOS(WINDOWS)
+inline void* alignedMalloc(size_t alignment, size_t size)
+{
+    void* result = nullptr;
+    if (posix_memalign(&result, alignment, size))
+        return nullptr;
+    return result;
+}
+#else
+inline void* alignedMalloc(size_t alignment, size_t size)
+{
+    return _aligned_malloc(size, alignment);
+} 
+#endif
+
 Allocator::Allocator(Heap* heap, Deallocator& deallocator)
     : m_isBmallocEnabled(heap->environment().isBmallocEnabled())
     , m_deallocator(deallocator)
@@ -67,10 +82,14 @@ void* Allocator::allocate(size_t alignment, size_t size)
     BASSERT(isPowerOfTwo(alignment));
 
     if (!m_isBmallocEnabled) {
+#if !BOS(WINDOWS)
         void* result = nullptr;
         if (posix_memalign(&result, alignment, size))
             return nullptr;
         return result;
+#else
+        return alignedMalloc(alignment, size);
+#endif
     }
 
     if (!size)

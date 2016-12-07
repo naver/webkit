@@ -60,6 +60,11 @@ inline void free(void* object)
     Cache::deallocate(object);
 }
 
+inline void freealign(void* object)
+{
+    Cache::deallocate(object, Cache::AlignedDeallocate);
+}
+
 inline void scavengeThisThread()
 {
     Cache::scavenge();

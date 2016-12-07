@@ -186,6 +186,10 @@ size_t fastMallocSize(const void* p)
 
 #include <bmalloc/bmalloc.h>
 
+#if OS(WINDOWS)
+#include <psapi.h>
+#endif
+
 namespace WTF {
 
 void* fastMalloc(size_t size)
@@ -233,7 +237,7 @@ void* fastAlignedMalloc(size_t alignment, size_t size)
 
 void fastAlignedFree(void* p) 
 {
-    bmalloc::api::free(p);
+    bmalloc::api::freealign(p);
 }
 
 TryMallocReturnValue tryFastMalloc(size_t size)
