@@ -97,6 +97,7 @@ void Gradient::setPlatformGradientSpaceTransform(const AffineTransform& gradient
     }
 }
 
+#if !PLATFORM(WIN_CAIRO)
 void Gradient::fill(GraphicsContext* context, const FloatRect& rect)
 {
     cairo_t* cr = context->platformContext()->cr();
@@ -107,6 +108,7 @@ void Gradient::fill(GraphicsContext* context, const FloatRect& rect)
     cairo_fill(cr);
     context->restore();
 }
+#endif
 
 } // namespace WebCore
 

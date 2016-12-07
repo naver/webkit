@@ -106,3 +106,30 @@ list(APPEND WebCore_FORWARDING_HEADERS_DIRECTORIES
 
     platform/network/curl
 )
+
+list(APPEND WebCore_INCLUDE_DIRECTORIES
+    "${WEBCORE_DIR}/platform/graphics/webgraphics"
+)
+
+list(REMOVE_ITEM WebCore_SOURCES
+    platform/graphics/cairo/FontCairo.cpp
+    platform/graphics/cairo/GraphicsContextCairo.cpp
+    platform/graphics/cairo/GraphicsContextCairoWin.cpp
+    platform/graphics/cairo/PlatformContextCairo.cpp
+)
+
+list(APPEND WebCore_SOURCES
+    platform/graphics/webgraphics/GraphicsContextCairoWebGraphics.cpp
+    platform/graphics/webgraphics/GraphicsContextCairoWebGraphicsWin.cpp
+    platform/graphics/webgraphics/PlatformContextCairoWebGraphics.cpp
+)
+
+list(APPEND WebCore_LIBRARIES
+    gfx2d
+    webgraphics
+)
+
+list(APPEND WebCoreTestSupport_LIBRARIES
+    gfx2d
+    webgraphics
+)
