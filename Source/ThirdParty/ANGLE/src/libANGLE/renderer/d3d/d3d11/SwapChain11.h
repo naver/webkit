@@ -72,6 +72,7 @@ class SwapChain11 : public SwapChainD3D
     bool mPassThroughResourcesInit;
 
     bool mFirstSwap;
+    bool mDidResize;
     DXGISwapChain *mSwapChain;
     IDXGISwapChain1 *mSwapChain1;
     IDXGIKeyedMutex *mKeyedMutex;

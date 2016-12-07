@@ -211,6 +211,11 @@ egl::Error SurfaceD3D::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
         return egl::Error(EGL_SUCCESS);
     }
 
+    if (checkForOutOfDateSwapChain())
+    {
+        return egl::Error(EGL_SUCCESS);
+    }
+
     if (x + width > mWidth)
     {
         width = mWidth - x;
@@ -235,8 +240,6 @@ egl::Error SurfaceD3D::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
             return egl::Error(status);
         }
     }
-
-    checkForOutOfDateSwapChain();
 
     return egl::Error(EGL_SUCCESS);
 }

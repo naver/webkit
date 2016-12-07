@@ -57,6 +57,7 @@ SwapChain11::SwapChain11(Renderer11 *renderer,
       mSwapInterval(0),
       mPassThroughResourcesInit(false),
       mFirstSwap(true),
+      mDidResize(false),
       mSwapChain(nullptr),
       mSwapChain1(nullptr),
       mKeyedMutex(nullptr),
@@ -476,6 +477,7 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
     }
 
     mFirstSwap = true;
+    mDidResize = true;
 
     return resetOffscreenBuffers(backbufferWidth, backbufferHeight);
 }
@@ -795,6 +797,11 @@ EGLint SwapChain11::present(EGLint x, EGLint y, EGLint width, EGLint height)
     {
         if (mFirstSwap)
         {
+            if (mDidResize)
+            {
+                mDidResize = false;
+                return EGL_SUCCESS;
+            }
             // Can't swap with a dirty rect if this swap chain has never swapped before
             DXGI_PRESENT_PARAMETERS params = {0, nullptr, nullptr, nullptr};
             result                         = mSwapChain1->Present1(swapInterval, 0, &params);
