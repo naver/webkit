@@ -53,6 +53,17 @@ void EditorState::encode(IPC::ArgumentEncoder& encoder) const
     encoder << lastMarkedRect;
     encoder << markedText;
 #endif
+
+#if PLATFORM(SLING)
+    encoder << editableText;
+    encoder << caretRectAtStart;
+    encoder << caretRectAtEnd;
+    encoder << selectionRangeStart;
+    encoder << selectionRangeEnd;
+    encoder << selectedText;
+    encoder << compositionRangeStart;
+    encoder << compositionRangeEnd;
+#endif
 }
 
 bool EditorState::decode(IPC::ArgumentDecoder& decoder, EditorState& result)
@@ -170,6 +181,24 @@ bool EditorState::PostLayoutData::decode(IPC::ArgumentDecoder& decoder, PostLayo
     if (!decoder.decode(result.isReplaceAllowed))
         return false;
     if (!decoder.decode(result.hasContent))
+        return false;
+#endif
+#if PLATFORM(SLING)
+    if (!decoder.decode(result.editableText))
+        return false;
+    if (!decoder.decode(result.caretRectAtStart))
+        return false;
+    if (!decoder.decode(result.caretRectAtEnd))
+        return false;
+    if (!decoder.decode(result.selectionRangeStart))
+        return false;
+    if (!decoder.decode(result.selectionRangeEnd))
+        return false;
+    if (!decoder.decode(result.selectedText))
+        return false;
+    if (!decoder.decode(result.compositionRangeStart))
+        return false;
+    if (!decoder.decode(result.compositionRangeEnd))
         return false;
 #endif
 #if PLATFORM(MAC)

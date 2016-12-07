@@ -79,7 +79,7 @@ void WebsiteDataStore::setResourceLoadStatisticsEnabled(bool enabled)
     m_websiteDataStore->setResourceLoadStatisticsEnabled(enabled);
 }
     
-#if !PLATFORM(COCOA) && !PLATFORM(EFL) && !PLATFORM(GTK)
+#if !PLATFORM(COCOA) && !PLATFORM(EFL) && !PLATFORM(GTK) && !PLATFORM(SLING)
 WebKit::WebsiteDataStore::Configuration WebsiteDataStore::defaultDataStoreConfiguration()
 {
     // FIXME: Fill everything in.

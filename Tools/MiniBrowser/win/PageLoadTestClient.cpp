@@ -32,7 +32,9 @@
 #include <wtf/FilePrintStream.h>
 #include <cmath>
 
+#if USE(CF)
 static const CFTimeInterval waitForNewResourceLoadDuration = 0.1;
+#endif
 
 PageLoadTestClient::PageLoadTestClient(MiniBrowser* host, bool pageLoadTesting)
     : m_host(host)
@@ -42,10 +44,12 @@ PageLoadTestClient::PageLoadTestClient(MiniBrowser* host, bool pageLoadTesting)
 {
 }
 
+#if USE(CF)
 void PageLoadTestClient::pageLoadStartedAtTime(CFAbsoluteTime startTime)
 {
     m_startTimes.append(startTime);
 }
+#endif
 
 void PageLoadTestClient::didStartProvisionalLoad(IWebFrame& frame)
 {
@@ -59,7 +63,9 @@ void PageLoadTestClient::didStartProvisionalLoad(IWebFrame& frame)
 
     if (mainFrame) {
         clearPageLoadState();
+#if USE(CF)
         pageLoadStartedAtTime(CFAbsoluteTimeGetCurrent());
+#endif
     }
 }
 
@@ -112,6 +118,7 @@ void PageLoadTestClient::didEndResourceLoad(uint64_t resourceIdentifier)
     maybeEndPageLoadSoon();
 }
 
+#if USE(CF)
 void PageLoadTestClient::pageLoadEndedAtTime(CFAbsoluteTime endTime)
 {
     ASSERT(!m_pageLoadTesting || m_endTimes.size() == m_currentRepetition);
@@ -138,6 +145,7 @@ void PageLoadTestClient::pageLoadEndedAtTime(CFAbsoluteTime endTime)
         }
     }
 }
+#endif
 
 void PageLoadTestClient::endPageLoad(Timer<PageLoadTestClient>* timer)
 {
@@ -145,7 +153,9 @@ void PageLoadTestClient::endPageLoad(Timer<PageLoadTestClient>* timer)
 
     if (!shouldConsiderPageLoadEnded())
         return;
+#if USE(CF)
     pageLoadEndedAtTime(m_pageLoadEndTime);
+#endif
     clearPageLoadState();
 }
 
@@ -154,7 +164,9 @@ void PageLoadTestClient::clearPageLoadState()
     m_currentPageLoadFinished = false;
     m_frames = 0;
     m_onLoadEvents = 0;
+#if USE(CF)
     m_pageLoadEndTime = 0;
+#endif
     m_loadingSubresources.clear();
     m_waitForLoadToReallyEnd.invalidate();
 }
@@ -168,10 +180,14 @@ void PageLoadTestClient::maybeEndPageLoadSoon()
 {
     if (!shouldConsiderPageLoadEnded())
         return;
+#if USE(CF)
     m_pageLoadEndTime = CFAbsoluteTimeGetCurrent();
+#endif
     if (m_waitForLoadToReallyEnd.isValid())
         m_waitForLoadToReallyEnd.invalidate();
+#if USE(CF)
     m_waitForLoadToReallyEnd.schedule(waitForNewResourceLoadDuration, false);
+#endif
 }
 
 #if OS(WINDOWS)
@@ -187,7 +203,7 @@ void PageLoadTestClient::dumpRunStatistics()
 
     char filenameSuffix[maxPathLength + 1];
 
-#if PLATFORM(WIN)
+#if OS(WINDOWS)
     DWORD pid = GetCurrentProcessId();
     _snprintf(filenameSuffix, sizeof(filenameSuffix), ".%d.txt", pid);
 #else
@@ -198,7 +214,7 @@ void PageLoadTestClient::dumpRunStatistics()
     const char* filename = "webkit_performance_log";
     char actualFilename[maxPathLength + 1];
 
-#if PLATFORM(WIN)
+#if OS(WINDOWS)
     _snprintf(actualFilename, sizeof(actualFilename), "%s%s", filename, filenameSuffix);
 #else
     snprintf(actualFilename, sizeof(actualFilename), "%s%s", filename, filenameSuffix);
@@ -214,6 +230,7 @@ void PageLoadTestClient::dumpRunStatistics()
 
     file->print("INDIVIDUAL URL LOAD TIMES:\n");
 
+#if USE(CF)
     CFTimeInterval pageLoadTime = m_endTimes.last() - m_startTimes.last();
     file->printf("Load Time = %.1f ms\t%s\n", pageLoadTime * 1000.0, static_cast<const char*>(m_url));
 
@@ -231,6 +248,7 @@ void PageLoadTestClient::dumpRunStatistics()
     file->printf("              Mean Time = %.1f ms\n", meanTime * 1000.0);
     file->printf("  Square-Mean-Root Time = %.1f ms\n", squareMeanRootTime * 1000.0);
     file->printf("    Geometric Mean Time = %.1f ms\n", geometricMeanTime * 1000.0);
+#endif
     file->printf("---------------------------------------------------------------------------------------------------\n");
 
     file->flush();

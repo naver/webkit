@@ -25,5 +25,9 @@ messages -> CoordinatedLayerTreeHost LegacyReceiver {
     RenderNextFrame()
     PurgeBackingStores()
     CommitScrollOffset(uint32_t layerID, WebCore::IntSize offset)
+#if PLATFORM(SLING)
+    ResetCoordinatedGraphicsState(uint64_t stateID)
+    RequestCoordinatedGraphicsStateAfterReset(uint64_t stateID)
+#endif
 }
 #endif

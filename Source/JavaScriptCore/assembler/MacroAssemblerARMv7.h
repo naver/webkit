@@ -1942,7 +1942,7 @@ public:
     
     static void revertJumpReplacementToBranchPtrWithPatch(CodeLocationLabel instructionStart, RegisterID rd, void* initialValue)
     {
-#if OS(LINUX)
+#if OS(LINUX) || OS(ANDROID)
         ARMv7Assembler::revertJumpTo_movT3movtcmpT2(instructionStart.dataLocation(), rd, dataTempRegister, reinterpret_cast<uintptr_t>(initialValue));
 #else
         UNUSED_PARAM(rd);

@@ -38,6 +38,10 @@
 #include <wtf/glib/GRefPtr.h>
 #endif
 
+#if PLATFORM(SLING)
+#include "WorkQueue.h"
+#endif
+
 namespace WebCore {
 class SocketStreamHandle;
 }
@@ -77,6 +81,10 @@ private:
     unsigned short m_port;
 #if USE(SOUP)
     GRefPtr<GSocketService> m_socketService;
+#endif
+#if PLATFORM(SLING)
+    int m_socketDescriptor;
+    RefPtr<WorkQueue> m_serviceQueue;
 #endif
     friend class WebSocketServerConnection;
 };

@@ -30,9 +30,14 @@
 
 namespace WebCore {
 
+class ResourceError;
+class ResourceResponse;
+
 class CertificateInfo {
 public:
     CertificateInfo() { }
+    explicit CertificateInfo(const WebCore::ResourceResponse&) { }
+    explicit CertificateInfo(const WebCore::ResourceError&) { }
 
     bool containsNonRootSHA1SignedCertificate() const { notImplemented(); return false; }
 };

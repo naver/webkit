@@ -86,6 +86,10 @@ public:
     PassRefPtr<Image> createReadOnlyImage(const IntRect&);
     ~GraphicsSurface();
 
+#if PLATFORM(SLING)
+    GraphicsSurfacePrivate* graphicsSurfacePrivate() const { return m_private; }
+#endif
+
 protected:
     static PassRefPtr<GraphicsSurface> platformCreate(const IntSize&, Flags, const PlatformGraphicsContext3D);
     static PassRefPtr<GraphicsSurface> platformImport(const IntSize&, Flags, const GraphicsSurfaceToken&);

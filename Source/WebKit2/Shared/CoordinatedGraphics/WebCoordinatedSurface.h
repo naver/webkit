@@ -25,7 +25,7 @@
 #include "ShareableBitmap.h"
 #include <WebCore/CoordinatedSurface.h>
 
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
 #include "GraphicsSurface.h"
 #endif
 
@@ -46,14 +46,14 @@ public:
         void encode(IPC::ArgumentEncoder&) const;
         static bool decode(IPC::ArgumentDecoder&, Handle&);
 
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
         WebCore::GraphicsSurfaceToken graphicsSurfaceToken() const { return m_graphicsSurfaceToken; }
 #endif
 
     private:
         friend class WebCoordinatedSurface;
         mutable ShareableBitmap::Handle m_bitmapHandle;
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
         WebCore::GraphicsSurfaceToken m_graphicsSurfaceToken;
 #endif
         WebCore::IntSize m_size;
@@ -84,7 +84,7 @@ private:
     static Ref<WebCoordinatedSurface> create(const WebCore::IntSize&, Flags, RefPtr<ShareableBitmap>);
 
     std::unique_ptr<WebCore::GraphicsContext> createGraphicsContext(const WebCore::IntRect&);
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     WebCoordinatedSurface(const WebCore::IntSize&, Flags, RefPtr<WebCore::GraphicsSurface>);
     // Create a shareable bitmap backed by a graphics surface.
     static RefPtr<WebCoordinatedSurface> createWithSurface(const WebCore::IntSize&, Flags);
@@ -96,7 +96,7 @@ private:
 
     RefPtr<ShareableBitmap> m_bitmap;
 
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     RefPtr<WebCore::GraphicsSurface> m_graphicsSurface;
 #endif
 };

@@ -349,8 +349,9 @@ void CurlDownload::moveFileToDestination()
 
     if (m_destination.isEmpty())
         return;
-
+#if OS(WINDOWS)
     ::MoveFileEx(m_tempPath.charactersWithNullTermination().data(), m_destination.charactersWithNullTermination().data(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING);
+#endif
 }
 
 void CurlDownload::writeDataToFile(const char* data, int size)

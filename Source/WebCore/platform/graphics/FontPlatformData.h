@@ -27,7 +27,7 @@
 
 #include "TextFlags.h"
 
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
 #include "SharedGDIObject.h"
 #endif
 
@@ -65,7 +65,7 @@ typedef struct CGFont* CGFontRef;
 #include <wtf/RetainPtr.h>
 #include <wtf/text/StringImpl.h>
 
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
 #include <wtf/win/GDIObject.h>
 typedef struct HFONT__* HFONT;
 #endif
@@ -101,7 +101,7 @@ public:
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant, TextRenderingMode);
 #endif
 
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
     FontPlatformData(GDIObject<HFONT>, float size, bool syntheticBold, bool syntheticOblique, bool useGDI);
 
 #if USE(CG)
@@ -118,7 +118,7 @@ public:
     ~FontPlatformData();
 #endif
 
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
     HFONT hfont() const { return m_font ? m_font->get() : 0; }
     bool useGDI() const { return m_useGDI; }
 #elif PLATFORM(COCOA)
@@ -132,7 +132,7 @@ public:
     bool hasCustomTracking() const { return isSystemFont(); }
 #endif
 
-#if PLATFORM(WIN) || PLATFORM(COCOA)
+#if PLATFORM(WIN) || PLATFORM(COCOA) || USE(CAIRO_WINFONT)
     bool isSystemFont() const { return m_isSystemFont; }
 #endif
 
@@ -152,6 +152,9 @@ public:
 
 #if USE(CAIRO)
     cairo_scaled_font_t* scaledFont() const { return m_scaledFont.get(); }
+#if USE(CAIRO_DWRITEFONT)
+    cairo_scaled_font_t* scaledGdiFont() const { return m_scaledGdiFont; }
+#endif
 #endif
 
 #if USE(FREETYPE)
@@ -213,7 +216,7 @@ public:
 #endif
     }
 
-#if PLATFORM(COCOA) || PLATFORM(WIN) || USE(FREETYPE)
+#if PLATFORM(COCOA) || PLATFORM(WIN) || USE(FREETYPE) || USE(CAIRO_WINFONT)
     RefPtr<SharedBuffer> openTypeTable(uint32_t table) const;
 #endif
 
@@ -226,7 +229,7 @@ private:
 #if PLATFORM(COCOA)
     CGFloat ctFontSize() const;
 #endif
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
     void platformDataInit(HFONT, float size, HDC, WCHAR* faceName);
 #endif
 #if USE(FREETYPE)
@@ -237,7 +240,7 @@ private:
     // FIXME: Get rid of one of these. These two fonts are subtly different, and it is not obvious which one to use where.
     RetainPtr<CTFontRef> m_font;
     mutable RetainPtr<CTFontRef> m_ctFont;
-#elif PLATFORM(WIN)
+#elif PLATFORM(WIN) || USE(CAIRO_WINFONT)
     RefPtr<SharedGDIObject<HFONT>> m_font;
 #endif
 
@@ -246,6 +249,9 @@ private:
 #endif
 #if USE(CAIRO)
     RefPtr<cairo_scaled_font_t> m_scaledFont;
+#if USE(CAIRO_DWRITEFONT)
+    RefPtr<cairo_scaled_font_t> m_scaledGdiFont;
+#endif
 #endif
 #if USE(FREETYPE)
     RefPtr<FcPattern> m_pattern;
@@ -271,7 +277,7 @@ private:
 #if PLATFORM(IOS)
     bool m_isEmoji { false };
 #endif
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
     bool m_useGDI { false };
 #endif
 #if USE(FREETYPE)

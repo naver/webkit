@@ -83,7 +83,8 @@
      || OS(FREEBSD)             \
      || OS(OPENBSD)             \
      || OS(HURD)                \
-     || OS(NETBSD)
+     || OS(NETBSD)              \
+     || OS(ANDROID)
     // GNU as-compatible syntax.
 #define LOCAL_LABEL_STRING(name) ".L" #name
 #endif

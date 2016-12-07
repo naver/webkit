@@ -53,7 +53,7 @@
 
 namespace WTF {
 
-#if OS(WINDOWS) && CPU(X86)
+#if OS(WINDOWS) && CPU(X86) && !USE(PTHREADS)
 #define THREAD_SPECIFIC_CALL __stdcall
 #else
 #define THREAD_SPECIFIC_CALL

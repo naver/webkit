@@ -37,6 +37,10 @@
 #include <wtf/ListHashSet.h>
 #include <wtf/text/CString.h>
 
+#if PLATFORM(SLING)
+#include "CertificateVerifier.h"
+#endif
+
 namespace WebCore {
 
 typedef std::tuple<String, String> clientCertificate;
@@ -205,6 +209,10 @@ static int certVerifyCallback(int ok, X509_STORE_CTX* ctx)
     if (!pemData(ctx, certificates))
         return 0;
     ok = sslIgnoreHTTPSCertificate(host, certificates);
+#if PLATFORM(SLING)
+    if (!ok)
+        ok = verifyServerCertificates(host.convertToLowercaseWithoutLocale(), certificates);
+#endif
 #endif
 
     if (ok) {

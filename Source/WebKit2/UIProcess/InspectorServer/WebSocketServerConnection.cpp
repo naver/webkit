@@ -67,9 +67,9 @@ void WebSocketServerConnection::shutdownNow()
 {
     if (!m_socket)
         return;
+    m_shutdownAfterSend = false;
     auto socket = WTFMove(m_socket);
     socket->close();
-    m_shutdownAfterSend = false;
 }
 
 void WebSocketServerConnection::shutdownAfterSendOrNow()

@@ -160,6 +160,12 @@ void GraphicsLayer::willBeDestroyed()
     if (m_replicatedLayer)
         m_replicatedLayer->setReplicatedByLayer(0);
 
+#if PLATFORM(SLING)
+    // FIXME : At the moment, there is no place to set maskLayer's parent to nullptr.
+    if (m_maskLayer)
+        m_maskLayer->setParent(nullptr);
+#endif
+
     removeAllChildren();
     removeFromParent();
 }

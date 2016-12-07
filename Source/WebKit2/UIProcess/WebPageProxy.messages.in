@@ -333,6 +333,13 @@ messages -> WebPageProxy {
     SearchTheWeb(String string)
 #endif
 
+#if PLATFORM(SLING)
+    # Speech messages
+    GetIsSpeaking() -> (bool isSpeaking)
+    Speak(String string)
+    StopSpeaking()
+#endif
+
 #if USE(APPKIT)
     SubstitutionsPanelIsShowing() -> (bool isShowing)
 #endif
@@ -416,6 +423,10 @@ messages -> WebPageProxy {
 
 #if ENABLE(CONTENT_FILTERING)
     ContentFilterDidBlockLoadForFrame(WebCore::ContentFilterUnblockHandler unblockHandler, uint64_t frameID)
+#endif
+
+#if PLATFORM(SLING)
+    HasTouchEventHandlers(bool hasTouchHandlers)
 #endif
 
     IsPlayingMediaDidChange(unsigned state, uint64_t sourceElementID)

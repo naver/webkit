@@ -28,6 +28,7 @@
 
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <string>
 
 namespace WTR {
 

@@ -34,13 +34,13 @@ class FloatRect;
 class TextureMapperSurfaceBackingStore : public TextureMapperBackingStore {
 public:
     static PassRefPtr<TextureMapperSurfaceBackingStore> create() { return adoptRef(new TextureMapperSurfaceBackingStore); }
-    void setGraphicsSurface(PassRefPtr<GraphicsSurface>);
-    void swapBuffersIfNeeded(uint32_t frontBuffer);
+    virtual void setGraphicsSurface(PassRefPtr<GraphicsSurface>);
+    virtual void swapBuffersIfNeeded(uint32_t frontBuffer);
     virtual RefPtr<BitmapTexture> texture() const;
     virtual void paintToTextureMapper(TextureMapper&, const FloatRect&, const TransformationMatrix&, float);
     virtual ~TextureMapperSurfaceBackingStore() { }
 
-private:
+protected:
     TextureMapperSurfaceBackingStore()
         : TextureMapperBackingStore()
         { }

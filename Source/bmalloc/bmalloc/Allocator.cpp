@@ -68,8 +68,12 @@ void* Allocator::allocate(size_t alignment, size_t size)
 
     if (!m_isBmallocEnabled) {
         void* result = nullptr;
+#if HAVE_ANDROID_OS
+        return memalign(alignment, size);
+#else
         if (posix_memalign(&result, alignment, size))
             return nullptr;
+#endif
         return result;
     }
 

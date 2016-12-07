@@ -40,6 +40,7 @@ static const EGLint contextAttributes[] = {
     EGL_NONE
 };
 
+#if defined(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT)
 static const EGLint contextRobustnessAttributes[] = {
 #if USE(OPENGL_ES_2)
     EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -61,6 +62,7 @@ static bool isRobustnessExtSupported(EGLDisplay display)
 
     return isRobustnessExtensionSupported;
 }
+#endif
 
 EGLOffScreenContext::EGLOffScreenContext()
     : GLPlatformContext()
@@ -81,6 +83,7 @@ bool EGLOffScreenContext::initialize(GLPlatformSurface* surface, PlatformContext
     if (!config)
         return false;
 
+#if defined(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT)
     if (isRobustnessExtSupported(m_display))
         m_contextHandle = eglCreateContext(m_display, config, sharedContext, contextRobustnessAttributes);
 
@@ -94,6 +97,7 @@ bool EGLOffScreenContext::initialize(GLPlatformSurface* surface, PlatformContext
         else
             eglDestroyContext(m_display, m_contextHandle);
     }
+#endif
 
     if (m_contextHandle == EGL_NO_CONTEXT) {
         m_contextHandle = eglCreateContext(m_display, config, sharedContext, contextAttributes);
@@ -149,7 +153,9 @@ void EGLOffScreenContext::freeResources()
 
 void EGLOffScreenContext::destroy()
 {
+#if !PLATFORM(SLING)
     GLPlatformContext::destroy();
+#endif
     freeResources();
 }
 

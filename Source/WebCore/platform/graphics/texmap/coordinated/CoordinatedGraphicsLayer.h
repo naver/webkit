@@ -38,6 +38,10 @@
 #endif
 #include <wtf/text/StringHash.h>
 
+#if USE(TEXTURE_MAPPER)
+#include "TextureMapperPlatformLayer.h"
+#endif
+
 #if USE(COORDINATED_GRAPHICS)
 
 namespace WebCore {
@@ -57,6 +61,9 @@ public:
 };
 
 class CoordinatedGraphicsLayer : public GraphicsLayer
+#if USE(TEXTURE_MAPPER)
+    , public TextureMapperPlatformLayer::Client
+#endif
     , public TiledBackingStoreClient
 #if USE(COORDINATED_GRAPHICS_THREADED)
     , public TextureMapperPlatformLayer::Client
@@ -124,6 +131,9 @@ public:
     void setScrollableArea(ScrollableArea*);
     bool isScrollable() const { return !!m_scrollableArea; }
     void commitScrollOffset(const IntSize&);
+#if PLATFORM(SLING)
+    void reset();
+#endif
 
     CoordinatedLayerID id() const { return m_id; }
 
@@ -163,6 +173,11 @@ private:
 
     void destroyPlatformLayerIfNeeded();
     void createPlatformLayerIfNeeded();
+#endif
+#if USE(TEXTURE_MAPPER)
+    // TextureMapperPlatformLayer::Client
+    void platformLayerWillBeDestroyed() override { setContentsToPlatformLayer(0, NoContentsLayer); }
+    void setPlatformLayerNeedsDisplay() override { setContentsNeedsDisplay(); }
 #endif
     void syncPlatformLayer();
 #if USE(COORDINATED_GRAPHICS_THREADED)

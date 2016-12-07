@@ -48,7 +48,7 @@ std::unique_ptr<GLTransportSurface> GLTransportSurface::createTransportSurface(c
     std::unique_ptr<GLTransportSurface> surface;
 #if USE(GLX)
     surface = std::make_unique<GLXTransportSurface>(size, attributes);
-#elif USE(EGL)
+#elif USE(EGL) && USE(GRAPHICS_SURFACE)
     surface = EGLTransportSurface::createTransportSurface(size, attributes);
 #endif
 
@@ -211,7 +211,7 @@ std::unique_ptr<GLTransportSurfaceClient> GLTransportSurfaceClient::createTransp
 #if USE(GLX)
     client = std::make_unique<GLXTransportSurfaceClient>(handle, hasAlpha);
     UNUSED_PARAM(size);
-#else
+#elif USE(EGL) && USE(GRAPHICS_SURFACE)
     client = EGLTransportSurface::createTransportSurfaceClient(handle, size, hasAlpha);
 #endif
 

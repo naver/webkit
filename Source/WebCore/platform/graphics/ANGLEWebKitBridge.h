@@ -36,7 +36,7 @@
 #include <OpenGL/gl.h>
 #elif PLATFORM(WIN)
 #include "OpenGLESShims.h"
-#elif PLATFORM(GTK) || PLATFORM(EFL)
+#elif PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(SLING)
 #if USE(OPENGL_ES_2)
 #include <GLES2/gl2.h>
 #else
@@ -71,7 +71,7 @@ struct ANGLEShaderSymbol {
         return symbolType == SHADER_SYMBOL_TYPE_UNIFORM
             && (dataType == GL_SAMPLER_2D
             || dataType == GL_SAMPLER_CUBE
-#if !PLATFORM(IOS) && !((PLATFORM(EFL) || PLATFORM(GTK)) && USE(OPENGL_ES_2))
+#if !PLATFORM(IOS) && !((PLATFORM(EFL) || PLATFORM(GTK) || PLATFORM(SLING)) && USE(OPENGL_ES_2))
             || dataType == GL_SAMPLER_2D_RECT_ARB
 #endif
             );

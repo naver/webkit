@@ -35,6 +35,8 @@ extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
 #endif
 #include <windows.h>
+#elif OS(ANDROID)
+#include <sys/atomics.h>
 #endif
 
 namespace WTF {

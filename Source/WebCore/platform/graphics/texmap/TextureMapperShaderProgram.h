@@ -29,9 +29,16 @@
 #include <wtf/Ref.h>
 #include <wtf/text/AtomicStringHash.h>
 
-namespace WebCore {
+#if PLATFORM(SLING)
+#include <wtf/NeverDestroyed.h>
+#endif
 
+namespace WebCore {
+#if !PLATFORM(SLING)
 #define TEXMAP_DECLARE_VARIABLE(Accessor, Name, Type) GC3Duint Accessor##Location() { static const AtomicString name(Name); return getLocation(name, Type); }
+#else
+#define TEXMAP_DECLARE_VARIABLE(Accessor, Name, Type) GC3Duint Accessor##Location() { static NeverDestroyed<AtomicString> name(Name); return getLocation(name, Type); }
+#endif
 #define TEXMAP_DECLARE_UNIFORM(Accessor) TEXMAP_DECLARE_VARIABLE(Accessor, "u_"#Accessor, UniformVariable)
 #define TEXMAP_DECLARE_ATTRIBUTE(Accessor) TEXMAP_DECLARE_VARIABLE(Accessor, "a_"#Accessor, AttribVariable)
 #define TEXMAP_DECLARE_SAMPLER(Accessor) TEXMAP_DECLARE_VARIABLE(Accessor, "s_"#Accessor, UniformVariable)
@@ -55,6 +62,9 @@ public:
         BlurFilter       = 1L << 14,
         AlphaBlur        = 1L << 15,
         ContentTexture   = 1L << 16
+#if PLATFORM(SLING)
+        , SurfaceTexture   = 1L << 17
+#endif
     };
 
     typedef unsigned Options;

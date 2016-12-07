@@ -9,7 +9,7 @@ add_subdirectory(WTF)
 
 add_subdirectory(JavaScriptCore)
 
-if (WIN32 AND ENABLE_GRAPHICS_CONTEXT_3D)
+if (WIN32 AND ENABLE_GRAPHICS_CONTEXT_3D AND NOT EXCLUDE_ANGLE_FROM_BUILD)
     add_subdirectory(ThirdParty/ANGLE)
 endif ()
 

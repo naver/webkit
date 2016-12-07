@@ -33,6 +33,8 @@
 #include "GLContextGLX.h"
 #endif
 
+#include <wtf/NeverDestroyed.h>
+
 using WTF::ThreadSpecific;
 
 namespace WebCore {
@@ -50,6 +52,10 @@ private:
 
 ThreadSpecific<ThreadGlobalGLContext>* ThreadGlobalGLContext::staticGLContext;
 
+#if PLATFORM(SLING)
+static NeverDestroyed<std::unique_ptr<GLContext>> sharingRef(nullptr);
+#endif
+
 inline ThreadGlobalGLContext* currentContext()
 {
     if (!ThreadGlobalGLContext::staticGLContext)
@@ -59,9 +65,26 @@ inline ThreadGlobalGLContext* currentContext()
 
 GLContext* GLContext::sharingContext()
 {
+#if PLATFORM(SLING)
+    std::unique_ptr<GLContext>& sharing = sharingRef.get();
+    if (!sharing)
+        sharing.reset(createOffscreenContext().release());
+#else
     DEPRECATED_DEFINE_STATIC_LOCAL(std::unique_ptr<GLContext>, sharing, (createOffscreenContext()));
+#endif
     return sharing.get();
 }
+
+#if PLATFORM(SLING)
+bool GLContext::destroySharingContextIfLost()
+{
+    if (!sharingContext()->makeContextCurrent()) {
+        sharingRef.get().reset();
+        return true;
+    }
+    return false;
+}
+#endif
 
 #if PLATFORM(X11)
 // Because of driver bugs, exiting the program when there are active pbuffers

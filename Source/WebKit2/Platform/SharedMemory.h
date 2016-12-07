@@ -30,7 +30,7 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/RefCounted.h>
 
-#if PLATFORM(GTK) || PLATFORM(EFL)
+#if PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(SLING)
 #include "Attachment.h"
 #include <wtf/text/WTFString.h>
 #endif

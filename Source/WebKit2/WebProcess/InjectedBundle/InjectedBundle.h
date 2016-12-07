@@ -69,6 +69,8 @@ typedef NSBundle *PlatformBundle;
 typedef ::GModule* PlatformBundle;
 #elif PLATFORM(EFL)
 typedef Eina_Module* PlatformBundle;
+#else
+typedef void* PlatformBundle;
 #endif
 
 class InjectedBundleScriptWorld;

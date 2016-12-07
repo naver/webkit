@@ -70,6 +70,11 @@ protected:
 
     void setViewOverlayRootLayer(WebCore::GraphicsLayer*) override;
 
+#if PLATFORM(SLING)
+    void resetCoordinatedGraphicsState(uint64_t stateID);
+    void requestCoordinatedGraphicsStateAfterReset(uint64_t stateID);
+#endif
+
     // CompositingCoordinator::Client
     void didFlushRootLayer(const WebCore::FloatRect& visibleContentRect) override;
     void notifyFlushRequired() override { scheduleLayerFlush(); };

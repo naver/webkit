@@ -51,6 +51,9 @@ public:
         ShouldRotateTexture90 = 0x10,
         ShouldRotateTexture180 = 0x20,
         ShouldRotateTexture270 = 0x40
+#if PLATFORM(SLING) && ENABLE(VIDEO)
+        , ShouldUseSurfaceTexture = 0x80
+#endif
     };
 
     typedef int Flags;

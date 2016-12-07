@@ -45,7 +45,7 @@
 #include <wtf/RetainPtr.h>
 #endif
 
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
 #include <usp10.h>
 #endif
 
@@ -190,7 +190,7 @@ public:
 
     bool applyTransforms(GlyphBufferGlyph*, GlyphBufferAdvance*, size_t glyphCount, bool enableKerning, bool requiresShaping) const;
 
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
     SCRIPT_FONTPROPERTIES* scriptFontProperties() const;
     SCRIPT_CACHE* scriptCache() const { return &m_scriptCache; }
     static void setShouldApplyMacAscentHack(bool);
@@ -214,7 +214,7 @@ private:
 
     void removeFromSystemFallbackCache();
 
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
     void initGDIFont();
     void platformCommonDestroy();
     FloatRect boundsForGDIGlyph(Glyph) const;
@@ -284,7 +284,7 @@ private:
     mutable std::unique_ptr<HashMap<String, bool>> m_combiningCharacterSequenceSupport;
 #endif
 
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || USE(CAIRO_WINFONT)
     mutable SCRIPT_CACHE m_scriptCache;
     mutable SCRIPT_FONTPROPERTIES* m_scriptFontProperties;
 #endif

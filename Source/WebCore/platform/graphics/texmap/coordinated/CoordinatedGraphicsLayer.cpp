@@ -144,6 +144,10 @@ CoordinatedGraphicsLayer::CoordinatedGraphicsLayer(Type layerType, GraphicsLayer
 
 CoordinatedGraphicsLayer::~CoordinatedGraphicsLayer()
 {
+#if USE(GRAPHICS_SURFACE) && USE(TEXTURE_MAPPER) && PLATFORM(SLING)
+    if (m_platformLayer)
+        m_platformLayer->setClient(nullptr);
+#endif
     if (m_coordinator) {
         purgeBackingStores();
         m_coordinator->detachLayer(this);
@@ -407,12 +411,19 @@ void CoordinatedGraphicsLayer::setContentsToPlatformLayer(PlatformLayer* platfor
             // m_platformLayerToken can be different to platformLayer->graphicsSurfaceToken(), even if m_platformLayer equals platformLayer.
             m_pendingPlatformLayerOperation |= RecreatePlatformLayer;
         }
+#if USE(TEXTURE_MAPPER) && PLATFORM(SLING)
+        m_platformLayer->setClient(nullptr);
+#endif
     } else {
         if (platformLayer)
             m_pendingPlatformLayerOperation |= CreateAndSyncPlatformLayer;
     }
 
     m_platformLayer = platformLayer;
+#if USE(TEXTURE_MAPPER) && PLATFORM(SLING)
+    if (m_platformLayer)
+        m_platformLayer->setClient(this);
+#endif
     // m_platformLayerToken is updated only here. 
     // In detail, when GraphicsContext3D is changed or reshaped, m_platformLayerToken is changed and setContentsToPlatformLayer() is always called.
     m_platformLayerSize = m_platformLayer ? m_platformLayer->platformLayerSize() : IntSize();
@@ -572,6 +583,29 @@ void CoordinatedGraphicsLayer::commitScrollOffset(const IntSize& offset)
     m_layerState.committedScrollOffsetChanged = true;
     didChangeLayerState();
 }
+
+#if PLATFORM(SLING)
+void CoordinatedGraphicsLayer::reset()
+{
+    m_layerState.changeMask = ~0;
+
+#if USE(GRAPHICS_SURFACE)
+    m_isValidPlatformLayer = false;
+    m_pendingPlatformLayerOperation = (m_platformLayer) ? CreateAndSyncPlatformLayer : None;
+    m_layerState.platformLayerChanged = false;
+    m_layerState.platformLayerShouldSwapBuffers = false;
+#endif
+    m_layerState.tilesToRemove.clear();
+
+    didChangeLayerState();
+    didChangeAnimations();
+    didChangeChildren();
+#if ENABLE(CSS_FILTERS)
+    didChangeFilters();
+#endif
+    didChangeImageBacking();
+}
+#endif
 
 void CoordinatedGraphicsLayer::setFixedToViewport(bool isFixed)
 {
@@ -1038,8 +1072,9 @@ void CoordinatedGraphicsLayer::purgeBackingStores()
     m_previousBackingStore = nullptr;
 
     releaseImageBackingIfNeeded();
-
+#if !PLATFORM(SLING)
     didChangeLayerState();
+#endif
 }
 
 void CoordinatedGraphicsLayer::setCoordinator(CoordinatedGraphicsLayerClient* coordinator)

@@ -330,6 +330,10 @@ void BitmapTextureGL::bindAsSurface(GraphicsContext3D* context3D)
 
 BitmapTextureGL::~BitmapTextureGL()
 {
+#if PLATFORM(SLING)
+    if (m_context3D->isContextDestroyedElsewhere())
+        return;
+#endif
     if (m_id)
         m_context3D->deleteTexture(m_id);
 

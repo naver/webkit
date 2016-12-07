@@ -365,8 +365,10 @@ bool hardLinkOrCopyFile(const String& source, const String& destination)
     if (!fsDestination.data())
         return false;
 
+#if !OS(WINDOWS) // FIXME!
     if (!link(fsSource.data(), fsDestination.data()))
         return true;
+#endif
 
     // Hard link failed. Perform a copy instead.
     auto handle = open(fsDestination.data(), O_WRONLY | O_CREAT | O_EXCL, 0666);

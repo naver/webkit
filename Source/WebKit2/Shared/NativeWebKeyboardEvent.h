@@ -69,6 +69,10 @@ public:
     NativeWebKeyboardEvent(const Evas_Event_Key_Up*);
 #elif PLATFORM(IOS)
     NativeWebKeyboardEvent(WebIOSEvent *);
+#elif PLATFORM(SLING)
+    NativeWebKeyboardEvent(WebKeyboardEvent&&, int32_t);
+#else
+    NativeWebKeyboardEvent(WebKeyboardEvent&&);
 #endif
 
 #if USE(APPKIT)
@@ -82,6 +86,9 @@ public:
     bool isFiltered() const { return m_isFiltered; }
 #elif PLATFORM(IOS)
     WebIOSEvent* nativeEvent() const { return m_nativeEvent.get(); }
+#elif PLATFORM(SLING)
+    int32_t hash() const { return m_strokeHash; }
+    const void* nativeEvent() const { return this; }
 #endif
 
 private:
@@ -96,6 +103,8 @@ private:
     bool m_isFiltered;
 #elif PLATFORM(IOS)
     RetainPtr<WebIOSEvent> m_nativeEvent;
+#elif PLATFORM(SLING)
+    int32_t m_strokeHash;
 #endif
 };
 

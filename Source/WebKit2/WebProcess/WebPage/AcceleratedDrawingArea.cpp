@@ -29,10 +29,13 @@
 
 #include "DrawingAreaProxyMessages.h"
 #include "LayerTreeHost.h"
+#include "RenderLayerBacking.h"
+#include "RenderView.h"
 #include "UpdateInfo.h"
 #include "WebPage.h"
 #include "WebPageCreationParameters.h"
 #include "WebPreferencesKeys.h"
+#include <WebCore/FrameView.h>
 #include <WebCore/MainFrame.h>
 #include <WebCore/Page.h>
 #include <WebCore/PageOverlayController.h>
@@ -55,6 +58,7 @@ AcceleratedDrawingArea::AcceleratedDrawingArea(WebPage& webPage, const WebPageCr
     : DrawingArea(DrawingAreaTypeImpl, webPage)
 #endif
     , m_exitCompositingTimer(RunLoop::main(), this, &AcceleratedDrawingArea::exitAcceleratedCompositingMode)
+    , m_transientZoomScale(1)
 {
     if (!m_webPage.isVisible())
         suspendPainting();
@@ -311,6 +315,57 @@ void AcceleratedDrawingArea::resumePainting()
     setNeedsDisplay();
 
     m_webPage.corePage()->resumeScriptedAnimations();
+}
+
+void AcceleratedDrawingArea::adjustTransientZoom(double scale, FloatPoint origin)
+{
+    applyTransientZoomToLayers(scale, origin);
+}
+
+void AcceleratedDrawingArea::applyTransientZoomToLayers(double scale, FloatPoint origin)
+{
+    // FIXME: Scrollbars should stay in-place and change height while zooming.
+    TransformationMatrix transform;
+    transform.translate(origin.x(), origin.y());
+    transform.scale(scale);
+
+    GraphicsLayer* zoomLayer = layerForTransientZoom();
+    zoomLayer->setTransform(transform);
+    zoomLayer->setAnchorPoint(FloatPoint());
+    zoomLayer->setPosition(FloatPoint());
+
+    m_transientZoomScale = scale;
+    m_transientZoomOrigin = origin;
+}
+
+GraphicsLayer* AcceleratedDrawingArea::layerForTransientZoom() const
+{
+    RenderLayerBacking* renderViewBacking = m_webPage.mainFrameView()->renderView()->layer()->backing();
+
+    if (GraphicsLayer* contentsContainmentLayer = renderViewBacking->contentsContainmentLayer())
+        return contentsContainmentLayer;
+
+    return renderViewBacking->graphicsLayer();
+}
+
+void AcceleratedDrawingArea::commitTransientZoom(double scale, FloatPoint origin)
+{
+    applyTransientZoomToPage(scale, origin);
+}
+
+void AcceleratedDrawingArea::applyTransientZoomToPage(double scale, FloatPoint origin)
+{
+    // If the page scale is already the target scale, setPageScaleFactor() will short-circuit
+    // and not apply the transform, so we can't depend on it to do so.
+    TransformationMatrix finalTransform;
+    finalTransform.scale(scale);
+    layerForTransientZoom()->setTransform(finalTransform);
+    
+    FloatPoint unscrolledOrigin(origin);
+    FloatRect unobscuredContentRect = m_webPage.mainFrameView()->unobscuredContentRectIncludingScrollbars();
+    unscrolledOrigin.moveBy(-unobscuredContentRect.location());
+    m_webPage.scalePage(scale, roundedIntPoint(-unscrolledOrigin));
+    m_transientZoomScale = 1;
 }
 
 void AcceleratedDrawingArea::enterAcceleratedCompositingMode(GraphicsLayer* graphicsLayer)

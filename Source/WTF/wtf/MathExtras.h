@@ -93,6 +93,12 @@ inline bool isinf(double x) { return !finite(x) && !isnand(x); }
 
 #endif
 
+#if OS(ANDROID)
+
+inline double log2(double x) { return log(x) / log(2.0); }
+
+#endif
+
 #if COMPILER(MSVC)
 
 // Work around a bug in Win, where atan2(+-infinity, +-infinity) yields NaN instead of specific values.

@@ -337,7 +337,7 @@ void getHostnamesWithCookies(const NetworkStorageSession&, HashSet<String>& host
     // FIXME: Not yet implemented
 }
 
-void deleteCookiesForHostname(const NetworkStorageSession&, const String& hostname)
+void deleteCookiesForHostnames(const NetworkStorageSession&, const Vector<String>& cookieHostNames)
 {
     // FIXME: Not yet implemented
 }

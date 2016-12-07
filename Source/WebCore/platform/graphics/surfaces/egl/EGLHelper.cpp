@@ -40,7 +40,7 @@ static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC eglImageTargetTexture2DOES = 0;
 
 EGLDisplay EGLHelper::eglDisplay()
 {
-    PlatformDisplay::sharedDisplay().eglDisplay();
+    return PlatformDisplay::sharedDisplay().eglDisplay();
 }
 
 EGLDisplay EGLHelper::currentDisplay()

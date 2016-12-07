@@ -194,7 +194,8 @@
 #elif !defined(__ARM_EABI__) \
     && !defined(__EABI__) \
     && !defined(__VFP_FP__) \
-    && !defined(_WIN32_WCE)
+    && !defined(_WIN32_WCE) \
+    && !defined(ANDROID)
 #define WTF_CPU_MIDDLE_ENDIAN 1
 
 #endif
@@ -413,7 +414,8 @@
 #define WTF_OS_MAC ERROR "USE MAC_OS_X WITH OS NOT MAC"
 
 /* OS(UNIX) - Any Unix-like system */
-#if    OS(AIX)              \
+#if   OS(AIX)              \
+    || OS(ANDROID)          \
     || OS(DARWIN)           \
     || OS(FREEBSD)          \
     || OS(HURD)             \
@@ -446,6 +448,8 @@
 #define WTF_PLATFORM_EFL 1
 #elif defined(BUILDING_GTK__)
 #define WTF_PLATFORM_GTK 1
+#elif defined(BUILDING_SLING__)
+#define WTF_PLATFORM_SLING 1
 #elif OS(MAC_OS_X)
 #define WTF_PLATFORM_MAC 1
 #elif OS(IOS)
@@ -476,6 +480,15 @@
 /* PLATFORM(WATCHOS) */
 #if defined(TARGET_OS_WATCH) && TARGET_OS_WATCH
 #define WTF_PLATFORM_WATCHOS 1
+#endif
+
+/* PLATFORM(SLING) */
+/* FIXME: this is sometimes used as an OS() switch, and other times to drive
+   policy choices */
+#if defined(ANDROID)
+#undef WTF_OS_LINUX
+#undef WTF_PLATFORM_WIN
+#define WTF_OS_ANDROID 1
 #endif
 
 /* Graphics engines */
@@ -588,7 +601,7 @@
 
 #endif /* PLATFORM(IOS) */
 
-#if PLATFORM(WIN) && !USE(WINGDI)
+#if PLATFORM(WIN) && !USE(WINGDI) && !PLATFORM(SLING)
 #define USE_CF 1
 #endif
 
@@ -637,7 +650,7 @@
 #define HAVE_STAT_BIRTHTIME 1
 #endif
 
-#if !OS(WINDOWS) && !OS(SOLARIS)
+#if !OS(WINDOWS) && !OS(SOLARIS) && !OS(ANDROID)
 #define HAVE_TM_GMTOFF 1
 #define HAVE_TM_ZONE 1
 #define HAVE_TIMEGM 1
@@ -677,6 +690,16 @@
 
 #if (PLATFORM(MAC) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 101200) || (PLATFORM(IOS) && __IPHONE_OS_VERSION_MIN_REQUIRED >= 100000)
 #define HAVE_CFNETWORK_STORAGE_PARTITIONING 1
+#endif
+
+#if OS(ANDROID)
+#undef HAVE_LANGINFO_H
+#define HAVE_ERRNO_H 1
+#define HAVE_MMAP 1
+#define HAVE_SBRK 1
+#define HAVE_STRINGS_H 1
+#define HAVE_SYS_PARAM_H 1
+#define HAVE_SYS_TIME_H 1
 #endif
 
 /* ENABLE macro defaults */
@@ -754,7 +777,7 @@
 #define ENABLE_DFG_JIT 1
 #endif
 /* Enable the DFG JIT on ARMv7.  Only tested on iOS and Qt/GTK+ Linux. */
-#if (CPU(ARM_THUMB2) || CPU(ARM64)) && (PLATFORM(IOS) || PLATFORM(GTK) || PLATFORM(EFL))
+#if (CPU(ARM_THUMB2) || CPU(ARM64)) && (PLATFORM(IOS) || PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(SLING))
 #define ENABLE_DFG_JIT 1
 #endif
 /* Enable the DFG JIT on ARM, MIPS and SH4. */

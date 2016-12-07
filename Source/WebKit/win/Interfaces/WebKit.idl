@@ -149,6 +149,7 @@ import "AccessibleApplication.idl";
 #include "IWebViewPrivate.idl"
 #include "IWebWorkersPrivate.idl"
 #include "WebKitMessageLoop.idl"
+#include "ITestRunnerWebView.idl"
 
 #define __TYPELIB_VERSION__ __BUILD_NUMBER_MAJOR__##.##__BUILD_NUMBER_MINOR__
 
@@ -174,6 +175,7 @@ library WebKit
         interface IWebViewEditingActions;
         interface IWebNotificationObserver;
         interface IWebViewPrivate2;
+        interface ITestRunnerWebView;
     }
 
     [uuid(66827ec1-3aef-4241-bac5-f776b44f030f)]

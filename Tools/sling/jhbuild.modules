@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+
+  <metamodule id="webkitsling-testing-dependencies">
+    <dependencies>
+      <dep package="Android SDK"/>
+      <dep package="Android SDK Tools"/>
+      <dep package="Android NDK"/>
+    </dependencies>
+  </metamodule>
+
+  <repository type="git" name="yobi.navercorp.com"
+      href="http://naverwebkit:naverwebkit@yobi.navercorp.com"/>
+  <repository type="git" name="oss.navercorp.com"
+      href="https://oss.navercorp.com"/>
+  <repository type="tarball" name="dl-ssl.google.com"
+      href="http://dl-ssl.google.com"/>
+
+  <autotools id="Android SDK" skip-autogen="true">
+    <branch module="android/android-sdk_r22.3-linux.tgz" version="22.3"
+            repo="dl-ssl.google.com"
+            hash="sha256:4077575c98075480e0156c10e48a1521e31c7952768271a206870e6813057f4f"
+            checkoutdir="android-sdk">
+    </branch>
+  </autotools>
+  <autotools id="Android SDK Tools" skip-autogen="true">
+    <branch module="WebEngine/droid-webkit-android-sdk-tools"
+            repo="yobi.navercorp.com" 
+            checkoutdir="android-sdk-tools">
+    </branch>
+  </autotools>
+  <autotools id="Android NDK" skip-autogen="true">
+    <branch module="android/repository/android-ndk-r12-linux-x86_64.zip" version="r12"
+            repo="dl-ssl.google.com"
+            checkoutdir="android-ndk-r12">
+    </branch>
+  </autotools>
+
+</moduleset>

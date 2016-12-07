@@ -1321,7 +1321,7 @@ public:
         m_formatter.twoWordOp5i6Imm4Reg4EncodedImm(OP_MOV_imm_T3, imm.m_value.imm4, rd, imm);
     }
     
-#if OS(LINUX)
+#if OS(LINUX) || OS(ANDROID)
     static void revertJumpTo_movT3movtcmpT2(void* instructionStart, RegisterID left, RegisterID right, uintptr_t imm)
     {
         uint16_t* address = static_cast<uint16_t*>(instructionStart);
@@ -2315,7 +2315,7 @@ public:
         ASSERT(!(bitwise_cast<uintptr_t>(instructionStart) & 1));
         ASSERT(!(bitwise_cast<uintptr_t>(to) & 1));
 
-#if OS(LINUX)
+#if OS(LINUX) || OS(ANDROID)
         if (canBeJumpT4(reinterpret_cast<uint16_t*>(instructionStart), to)) {
             uint16_t* ptr = reinterpret_cast<uint16_t*>(instructionStart) + 2;
             linkJumpT4(ptr, ptr, to);
@@ -2334,7 +2334,7 @@ public:
     
     static ptrdiff_t maxJumpReplacementSize()
     {
-#if OS(LINUX)
+#if OS(LINUX) || OS(ANDROID)
         return 10;
 #else
         return 4;
@@ -2389,7 +2389,7 @@ public:
 
     unsigned debugOffset() { return m_formatter.debugOffset(); }
 
-#if OS(LINUX)
+#if OS(LINUX) || OS(ANDROID)
     static inline void linuxPageFlush(uintptr_t begin, uintptr_t end)
     {
         asm volatile(
@@ -2411,7 +2411,7 @@ public:
     {
 #if OS(IOS)
         sys_cache_control(kCacheFunctionPrepareForExecution, code, size);
-#elif OS(LINUX)
+#elif OS(LINUX) || OS(ANDROID)
         size_t page = pageSize();
         uintptr_t current = reinterpret_cast<uintptr_t>(code);
         uintptr_t end = current + size;

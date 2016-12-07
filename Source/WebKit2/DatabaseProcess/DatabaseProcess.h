@@ -52,7 +52,7 @@ class DatabaseProcess : public ChildProcess
 #endif
 {
     WTF_MAKE_NONCOPYABLE(DatabaseProcess);
-    friend class NeverDestroyed<DatabaseProcess>;
+    friend class WTF::NeverDestroyed<DatabaseProcess>;
 public:
     static DatabaseProcess& singleton();
     ~DatabaseProcess();

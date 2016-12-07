@@ -38,6 +38,10 @@
 #include <wtf/glib/GRefPtr.h>
 #endif
 
+#if PLATFORM(SLING)
+#include <wtf/sling/ThreadLoop.h>
+#endif
+
 namespace JSC {
 
 class JSLock;
@@ -75,6 +79,14 @@ protected:
     void timerDidFire();
     RefPtr<JSLock> m_apiLock;
     GRefPtr<GSource> m_timer;
+#elif PLATFORM(SLING)
+    void timerFired();
+    void stop();
+    void startOneShot(double delay);
+    void ensureTimer();
+
+    int32_t m_timerID;
+    bool m_registeredTimer;
 #endif
     
 private:

@@ -149,7 +149,7 @@ void Connection::platformInvalidate()
 
 #if PLATFORM(GTK)
     m_socketMonitor.stop();
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || USE(UNIX_DOMAIN_SOCKETS)
     m_connectionQueue->unregisterSocketEventHandler(m_socketDescriptor);
 #endif
 
@@ -382,7 +382,7 @@ bool Connection::open()
         ASSERT_NOT_REACHED();
         return G_SOURCE_REMOVE;
     });
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || USE(UNIX_DOMAIN_SOCKETS)
     m_connectionQueue->registerSocketEventHandler(m_socketDescriptor,
         [protectedThis] {
             protectedThis->readyReadHandler();

@@ -29,6 +29,7 @@
 #include "APIObject.h"
 #include "MessageReceiver.h"
 #include <WebCore/IconDatabaseBase.h>
+#include <WebCore/SharedBuffer.h>
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

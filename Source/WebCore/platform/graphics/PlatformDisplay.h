@@ -39,6 +39,9 @@ class PlatformDisplay {
     WTF_MAKE_NONCOPYABLE(PlatformDisplay); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PlatformDisplay& sharedDisplay();
+#if PLATFORM(SLING)
+    static void destroySharedDisplay();
+#endif
     virtual ~PlatformDisplay();
 
     enum class Type {
@@ -50,6 +53,9 @@ public:
 #endif
 #if PLATFORM(WIN)
         Windows,
+#endif
+#if PLATFORM(SLING)
+        Sling,
 #endif
     };
 

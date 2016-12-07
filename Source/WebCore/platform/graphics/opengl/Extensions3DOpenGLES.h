@@ -106,8 +106,10 @@ protected:
     bool m_supportsIMGMultisampledRenderToTexture;
     bool m_supportsANGLEinstancedArrays;
 
+#if !PLATFORM(SLING)
     PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMGPROC m_glFramebufferTexture2DMultisampleIMG;
     PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMGPROC m_glRenderbufferStorageMultisampleIMG;
+#endif
     PFNGLBINDVERTEXARRAYOESPROC m_glBindVertexArrayOES;
     PFNGLDELETEVERTEXARRAYSOESPROC m_glDeleteVertexArraysOES;
     PFNGLGENVERTEXARRAYSOESPROC m_glGenVertexArraysOES;
@@ -116,10 +118,11 @@ protected:
     PFNGLREADNPIXELSEXTPROC m_glReadnPixelsEXT;
     PFNGLGETNUNIFORMFVEXTPROC m_glGetnUniformfvEXT;
     PFNGLGETNUNIFORMIVEXTPROC m_glGetnUniformivEXT;
+#if !PLATFORM(SLING)
     PFNGLVERTEXATTRIBDIVISORANGLEPROC m_glVertexAttribDivisorANGLE;
     PFNGLDRAWARRAYSINSTANCEDANGLEPROC m_glDrawArraysInstancedANGLE;
     PFNGLDRAWELEMENTSINSTANCEDANGLEPROC m_glDrawElementsInstancedANGLE;
-
+#endif
     std::unique_ptr<GraphicsContext3D::ContextLostCallback> m_contextLostCallback;
 };
 

@@ -50,6 +50,11 @@ typedef GtkWidget* PlatformWindow;
 #elif PLATFORM(EFL)
 typedef Evas_Object* PlatformWKView;
 typedef Ecore_Evas* PlatformWindow;
+#elif OS(WINDOWS)
+#include <WebKit/WebKit.h>
+#include <WebKit/WebKitCOMAPI.h>
+typedef IWebView* PlatformWKView;
+typedef HWND PlatformWindow;
 #endif
 
 namespace WTR {
@@ -100,6 +105,9 @@ private:
     bool m_windowIsKey;
     const TestOptions m_options;
 
+#if OS(WINDOWS)
+    PlatformWindow m_viewWindow;
+#endif
 #if PLATFORM(EFL)
     bool m_usingFixedLayout;
 #endif

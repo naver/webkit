@@ -95,8 +95,11 @@ public:
     }
 
     bool isHashTableDeletedValue() const { return m_ptr == hashTableDeletedValue(); }
+#if !COMPILER(MSVC)
     constexpr static T hashTableDeletedValue() { return reinterpret_cast<T>(-1); }
-
+#else
+    static T hashTableDeletedValue() { return reinterpret_cast<T>(-1); }
+#endif
     PtrType get() const { return m_ptr; }
 
     void clear()

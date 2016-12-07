@@ -47,6 +47,10 @@
 #include <wtf/text/CString.h>
 #endif
 
+#if PLATFORM(SLING) && ENABLE(VIDEO)
+#define TEXTURE_EXTERNAL_OES 0x8D65
+#endif
+
 namespace WebCore {
 
 class TextureMapperGLData {
@@ -123,6 +127,10 @@ TextureMapperGLData::TextureMapperGLData(GraphicsContext3D& context)
 
 TextureMapperGLData::~TextureMapperGLData()
 {
+#if PLATFORM(SLING)
+    if (m_context.isContextDestroyedElsewhere())
+        return;
+#endif
     for (auto& entry : m_vbos)
         m_context.deleteBuffer(entry.value);
 }
@@ -170,6 +178,13 @@ TextureMapperGL::TextureMapperGL()
     m_data = new TextureMapperGLData(*m_context3D);
 #if USE(TEXTURE_MAPPER_GL)
     m_texturePool = std::make_unique<BitmapTexturePool>(m_context3D.copyRef());
+#endif
+#if PLATFORM(SLING) && ENABLE(VIDEO)
+    ANGLEWebKitBridge& compiler = m_context3D->getCompiler();
+    ShBuiltInResources ANGLEResources = compiler.getResources();
+    ANGLEResources.OES_standard_derivatives = 1;
+    ANGLEResources.OES_EGL_image_external = 1;
+    compiler.setResources(ANGLEResources);
 #endif
 }
 
@@ -265,7 +280,11 @@ void TextureMapperGL::drawNumber(int number, const Color& color, const FloatPoin
     RefPtr<BitmapTexture> texture = acquireTextureFromPool(size);
     const unsigned char* bits = cairo_image_surface_get_data(surface);
     int stride = cairo_image_surface_get_stride(surface);
+#if PLATFORM(SLING)
+    static_cast<BitmapTextureGL*>(texture.get())->updateContents(bits, sourceRect, IntPoint::zero(), stride, BitmapTexture::UpdateCanModifyOriginalImageData);
+#else
     static_cast<BitmapTextureGL*>(texture.get())->updateContentsNoSwizzle(bits, sourceRect, IntPoint::zero(), stride);
+#endif
     drawTexture(*texture, targetRect, modelViewMatrix, 1.0f, AllEdges);
 
     cairo_surface_destroy(surface);
@@ -449,6 +468,10 @@ void TextureMapperGL::drawTexture(Platform3DObject texture, Flags flags, const I
         flags |= ShouldBlend;
 
     Ref<TextureMapperShaderProgram> program = data().getShaderProgram(options);
+#if PLATFORM(SLING) && ENABLE(VIDEO)
+    if (flags & ShouldUseSurfaceTexture)
+        options |= TextureMapperShaderProgram::SurfaceTexture;
+#endif
 
     if (filter)
         prepareFilterProgram(program.get(), *filter.get(), data().filterInfo->pass, textureSize, filterContentTextureID);
@@ -551,7 +574,22 @@ void TextureMapperGL::drawTexturedQuadWithProgram(TextureMapperShaderProgram& pr
 {
     m_context3D->useProgram(program.programID());
     m_context3D->activeTexture(GraphicsContext3D::TEXTURE0);
+#if PLATFORM(SLING) && ENABLE(VIDEO)
+    GC3Denum target;
+    switch (flags) {
+        case ShouldUseARBTextureRect:
+            target = GC3Denum(Extensions3D::TEXTURE_RECTANGLE_ARB);
+            break;
+        case ShouldUseSurfaceTexture:
+            target = GC3Denum(TEXTURE_EXTERNAL_OES);
+            break;
+        default:
+            target = GC3Denum(GraphicsContext3D::TEXTURE_2D);
+            break;
+    }
+#else
     GC3Denum target = flags & ShouldUseARBTextureRect ? GC3Denum(Extensions3D::TEXTURE_RECTANGLE_ARB) : GC3Denum(GraphicsContext3D::TEXTURE_2D);
+#endif
     m_context3D->bindTexture(target, texture);
     m_context3D->uniform1i(program.samplerLocation(), 0);
     if (wrapMode() == RepeatWrap) {
@@ -586,8 +624,13 @@ void TextureMapperGL::drawTexturedQuadWithProgram(TextureMapperShaderProgram& pr
         flags |= ShouldBlend;
 
     draw(rect, modelViewMatrix, program, GraphicsContext3D::TRIANGLE_FAN, flags);
+#if PLATFORM(SLING) && ENABLE(VIDEO)
+    m_context3D->texParameteri(target, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE);
+    m_context3D->texParameteri(target, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE);
+#else
     m_context3D->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE);
     m_context3D->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE);
+#endif
 }
 
 void TextureMapperGL::drawFiltered(const BitmapTexture& sampler, const BitmapTexture* contentTexture, const FilterOperation& filter, int pass)

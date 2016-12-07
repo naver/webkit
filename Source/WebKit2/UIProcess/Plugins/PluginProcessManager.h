@@ -52,7 +52,7 @@ class WebProcessProxy;
 
 class PluginProcessManager {
     WTF_MAKE_NONCOPYABLE(PluginProcessManager);
-    friend class NeverDestroyed<PluginProcessManager>;
+    friend class WTF::NeverDestroyed<PluginProcessManager>;
 public:
     static PluginProcessManager& singleton();
 

@@ -682,6 +682,39 @@ void CoordinatedGraphicsScene::purgeGLResources()
     });
 }
 
+#if PLATFORM(SLING)
+void CoordinatedGraphicsScene::deleteGLResourcesThenDestroyOnMainThread()
+{
+    m_imageBackings.clear();
+    m_releasedImageBackings.clear();
+#if USE(GRAPHICS_SURFACE)
+    m_surfaceBackingStores.clear();
+#endif
+    m_surfaces.clear();
+
+    m_rootLayer = nullptr;
+    m_rootLayerID = InvalidCoordinatedLayerID;
+    m_layers.clear();
+    m_fixedLayers.clear();
+    m_textureMapper = nullptr;
+    m_backingStores.clear();
+    m_backingStoresWithPendingBuffers.clear();
+
+    RefPtr<CoordinatedGraphicsScene> protector(this);
+    dispatchOnMainThread([=]() mutable {
+        protector.release();
+    });
+}
+
+void CoordinatedGraphicsScene::setGraphicsContextWasDestroyedElsewhere()
+{
+    if (m_textureMapper) {
+        TextureMapperGL* textureMapper = static_cast<TextureMapperGL*>(m_textureMapper.get());
+        textureMapper->graphicsContext3D()->setContextWasDestroyedElsewhere();
+    }
+}
+#endif
+
 void CoordinatedGraphicsScene::dispatchCommitScrollOffset(uint32_t layerID, const IntSize& offset)
 {
     m_client->commitScrollOffset(layerID, offset);

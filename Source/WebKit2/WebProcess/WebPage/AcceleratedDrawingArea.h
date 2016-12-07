@@ -85,6 +85,13 @@ protected:
     virtual void sendDidUpdateBackingStoreState();
     virtual void didUpdateBackingStoreState() { }
 
+    virtual void adjustTransientZoom(double scale, WebCore::FloatPoint origin) override;
+    virtual void commitTransientZoom(double scale, WebCore::FloatPoint origin) override;
+
+    void applyTransientZoomToLayers(double scale, WebCore::FloatPoint origin);
+    void applyTransientZoomToPage(double scale, WebCore::FloatPoint origin);
+    WebCore::GraphicsLayer* layerForTransientZoom() const;
+
     virtual void enterAcceleratedCompositingMode(WebCore::GraphicsLayer*);
     virtual void exitAcceleratedCompositingMode() { }
 
@@ -119,6 +126,9 @@ protected:
 
     // The layer tree host that handles accelerated compositing.
     RefPtr<LayerTreeHost> m_layerTreeHost;
+
+    double m_transientZoomScale;
+    WebCore::FloatPoint m_transientZoomOrigin;
 };
 
 } // namespace WebKit

@@ -176,6 +176,11 @@ private:
     virtual void setNativeSurfaceHandleForCompositing(uint64_t) = 0;
     virtual void destroyNativeSurfaceHandleForCompositing(bool&) = 0;
 #endif
+
+#if PLATFORM(SLING)
+    virtual void adjustTransientZoom(double /*scale*/, WebCore::FloatPoint /*origin*/) { }
+    virtual void commitTransientZoom(double /*scale*/, WebCore::FloatPoint /*origin*/) { }
+#endif
 };
 
 } // namespace WebKit

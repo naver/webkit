@@ -94,6 +94,10 @@ public:
     // Create a new drawing area proxy for the given page.
     virtual std::unique_ptr<DrawingAreaProxy> createDrawingAreaProxy() = 0;
 
+#if PLATFORM(SLING)
+    virtual void setViewResumePainting() = 0;
+#endif
+
     // Tell the view to invalidate the given region. The region is in view coordinates.
     virtual void setViewNeedsDisplay(const WebCore::Region&) = 0;
 
@@ -146,9 +150,9 @@ public:
     virtual void didFindZoomableArea(const WebCore::IntPoint&, const WebCore::IntRect&) = 0;
 #endif
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(SLING)
     virtual void updateTextInputState() = 0;
-#endif // PLATFORM(EFL)
+#endif // PLATFORM(EFL) || PLATFORM(SLING)
 
     virtual void handleDownloadRequest(DownloadProxy*) = 0;
 
@@ -197,6 +201,17 @@ public:
                                          const String& url, const String& visibleUrl) = 0;
 
 #endif
+#endif
+
+#if PLATFORM(SLING)
+#if ENABLE(DRAG_SUPPORT)
+    virtual void setDragImage(const WebCore::IntPoint& clientPosition, PassRefPtr<ShareableBitmap> dragImage, bool isLinkDrag) = 0;
+    virtual void setPromisedData(const String& pasteboardName, PassRefPtr<WebCore::SharedBuffer> imageBuffer, const String& filename,
+        const String& extension, const String& title, const String& url, const String& visibleUrl, PassRefPtr<WebCore::SharedBuffer> archiveBuffer) = 0;
+#endif
+    virtual bool isSpeaking() = 0;
+    virtual void speak(const String& string) = 0;
+    virtual void stopSpeaking() = 0;
 #endif
 
     virtual WebCore::FloatRect convertToDeviceSpace(const WebCore::FloatRect&) = 0;

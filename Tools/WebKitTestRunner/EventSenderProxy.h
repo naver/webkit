@@ -123,6 +123,12 @@ private:
 #if ENABLE(TOUCH_EVENTS)
     void sendTouchEvent(Ewk_Touch_Event_Type);
 #endif
+#elif OS(WINDOWS)
+    void sendOrQueueEvent(const MSG&);
+    void dispatchEvent(const MSG&);
+#if ENABLE(TOUCH_EVENTS)
+    void sendTouchEvent(const MSG&);
+#endif
 #endif
 
     double m_time;

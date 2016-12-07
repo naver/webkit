@@ -690,6 +690,12 @@ public:
     void setComposition(const WTF::String& compositionString, const WTF::Vector<WebCore::CompositionUnderline>& underlines, uint64_t cursorPosition);
     void cancelComposition();
 #endif
+#if PLATFORM(SLING)
+    void setComposition(const WTF::String& text, const WTF::Vector<WebCore::CompositionUnderline>& underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementStart, uint64_t replacementEnd);
+    void confirmComposition(const String& text);
+    void finishComposition();
+    void cancelComposition();
+#endif // PLATFORM(SLING)
 
 #if HAVE(ACCESSIBILITY) && (PLATFORM(GTK) || PLATFORM(EFL))
     void updateAccessibilityTree();
@@ -747,6 +753,9 @@ public:
 #if PLATFORM(IOS)
     void computePagesForPrintingAndDrawToPDF(uint64_t frameID, const PrintInfo&, uint64_t callbackID, PassRefPtr<Messages::WebPage::ComputePagesForPrintingAndDrawToPDF::DelayedReply>);
 #endif
+#elif PLATFORM(SLING)
+    void drawRectToImage(uint64_t frameID, const PrintInfo&, const WebCore::IntRect&, const WebCore::IntSize&, uint64_t callbackID);
+    void drawPagesToPDF(uint64_t frameID, const PrintInfo&, uint32_t first, uint32_t count, uint64_t callbackID);
 #elif PLATFORM(GTK)
     void drawPagesForPrinting(uint64_t frameID, const PrintInfo&, uint64_t callbackID);
     void didFinishPrintOperation(const WebCore::ResourceError&, uint64_t callbackID);

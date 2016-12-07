@@ -785,13 +785,24 @@ macro(ADD_WEBKIT2_PREFIX_HEADER _target)
         if (${OLD_COMPILE_FLAGS} STREQUAL "OLD_COMPILE_FLAGS-NOTFOUND")
             set(OLD_COMPILE_FLAGS "")
         endif ()
+        if (NOT MSVC)
         set_target_properties(${_target} PROPERTIES COMPILE_FLAGS "${OLD_COMPILE_FLAGS} -include ${WEBKIT2_DIR}/WebKit2Prefix.h")
+        else ()
+        set_target_properties(${_target} PROPERTIES COMPILE_FLAGS "/Yu\"WebKit2Prefix.h\" /FI\"WebKit2Prefix.h\" /FI\"WebCorePrefix.h\" /Fp\"WebKit2Prefix.pch\"")
+        endif ()
     endif ()
 endmacro()
 
 WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS()
 
 GENERATE_WEBKIT2_MESSAGE_SOURCES(WebKit2_DERIVED_SOURCES "${WebKit2_MESSAGES_IN_FILES}")
+
+if (MSVC)
+    list(APPEND WebKit2_SOURCES WebKit2Prefix.cpp)
+    set_source_files_properties(WebKit2Prefix.cpp PROPERTIES COMPILE_FLAGS "/Yc\"WebKit2Prefix.h\" /Fp\"WebKit2Prefix.pch\"" OBJECT_OUTPUTS "WebKit2Prefix.pch")
+    # WebKit.dll is expected to export the symbols in WebCore that have been marked as WEBCORE_EXPORT
+    add_definitions(-DWEBCORE_EXPORT=WTF_EXPORT)
+endif ()
 
 set(WebKit2_AUTOMATION_PROTOCOL_GENERATOR_SCRIPTS
     ${PROTOCOL_GENERATOR_SCRIPTS_DIR}/generate-inspector-protocol-bindings.py
@@ -846,6 +857,8 @@ WEBKIT_FRAMEWORK(WebKit2)
 add_dependencies(WebKit2 WebCore ${WEBKIT2_EXTRA_DEPENDENCIES})
 add_webkit2_prefix_header(WebKit2)
 
+if (NOT MSVC)
+
 if (NOT APPLE)
     target_link_libraries(WebKit2 -Wl,--start-group WebCore WebCoreDerivedSources -Wl,--end-group)
 endif ()
@@ -853,9 +866,13 @@ endif ()
 # Suppress unused parameter warnings for sources in WebKit2.
 ADD_TARGET_PROPERTIES(WebKit2 COMPILE_FLAGS "-Wno-unused-parameter")
 
+endif ()
+
 if (WebKit2_VERSION_SCRIPT)
     ADD_TARGET_PROPERTIES(WebKit2 LINK_FLAGS "${WebKit2_VERSION_SCRIPT}")
 endif ()
+
+if (NOT DISABLE_WEBKIT2_PROCESS_EXECUTABLES)
 
 add_executable(WebProcess ${WebProcess_SOURCES})
 add_webkit2_prefix_header(WebProcess)
@@ -897,6 +914,10 @@ if (ENABLE_DATABASE_PROCESS AND NOT "${PORT}" STREQUAL "Mac")
     endif ()
 endif ()
 
+endif () # NOT DISABLE_WEBKIT2_PROCESS_EXECUTABLES
+
+WEBKIT_WRAP_SOURCELIST(${WebKit2_MESSAGES_IN_FILES} ${WebKit2_SOURCES} ${WebKit2_DERIVED_SOURCES})
+
 if ("${PORT}" STREQUAL "Mac")
     set(_web_xpc_dir ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/WebKit.framework/XPCServices/com.apple.WebKit.WebContent.Development.xpc/Contents)
     make_directory(${_web_xpc_dir}/MacOS)
@@ -928,8 +949,10 @@ else ()
     POPULATE_LIBRARY_VERSION(WEBKIT2)
     set_target_properties(WebKit2 PROPERTIES VERSION ${WEBKIT2_VERSION} SOVERSION ${WEBKIT2_VERSION_MAJOR})
 
+if (NOT DISABLE_WEBKIT2_PROCESS_EXECUTABLES)
     install(TARGETS WebKit2 WebProcess NetworkProcess
         LIBRARY DESTINATION "${LIB_INSTALL_DIR}"
         RUNTIME DESTINATION "${LIBEXEC_INSTALL_DIR}"
     )
+endif () # NOT DISABLE_WEBKIT2_PROCESS_EXECUTABLES
 endif ()

@@ -35,7 +35,7 @@ if (WTF_PLATFORM_WIN_CAIRO)
     list(APPEND MiniBrowser_LIBRARIES
         CFLite
     )
-else ()
+elif (USE_CF)
     list(APPEND MiniBrowser_LIBRARIES
         CoreFoundation
     )

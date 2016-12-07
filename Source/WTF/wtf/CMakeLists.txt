@@ -285,23 +285,31 @@ list(APPEND WTF_LIBRARIES
 if (WIN32)
     list(APPEND WTF_SOURCES
         OSAllocatorWin.cpp
-        ThreadSpecificWin.cpp
-        ThreadingWin.cpp
     )
 else ()
+    list(APPEND WTF_SOURCES
+        OSAllocatorPosix.cpp
+    )
+endif ()
+
+if (USE_PTHREADS)
     list(APPEND WTF_HEADERS
         ThreadIdentifierDataPthreads.h
     )
     list(APPEND WTF_SOURCES
-        OSAllocatorPosix.cpp
         ThreadIdentifierDataPthreads.cpp
         ThreadingPthreads.cpp
+    )
+else ()
+    list(APPEND WTF_SOURCES
+        ThreadSpecificWin.cpp
+        ThreadingWin.cpp
     )
 endif ()
 
 WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS()
 
-WEBKIT_WRAP_SOURCELIST(${WTF_SOURCES})
+WEBKIT_WRAP_SOURCELIST(${WTF_HEADERS} ${WTF_SOURCES})
 WEBKIT_FRAMEWORK(WTF)
 
 if (MSVC)

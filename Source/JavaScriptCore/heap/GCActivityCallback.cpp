@@ -37,7 +37,7 @@
 #include <wtf/RetainPtr.h>
 #include <wtf/WTFThreadData.h>
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(SLING)
 #include <wtf/MainThread.h>
 #elif USE(GLIB)
 #include <glib.h>
@@ -47,7 +47,7 @@ namespace JSC {
 
 bool GCActivityCallback::s_shouldCreateGCTimer = true;
 
-#if USE(CF) || USE(GLIB)
+#if USE(CF) || USE(GLIB) || PLATFORM(SLING)
 
 const double timerSlop = 2.0; // Fudge factor to avoid performance cost of resetting timer.
 
@@ -61,7 +61,7 @@ GCActivityCallback::GCActivityCallback(Heap* heap, CFRunLoopRef runLoop)
     : GCActivityCallback(heap->vm(), runLoop)
 {
 }
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || PLATFORM(SLING)
 GCActivityCallback::GCActivityCallback(Heap* heap)
     : GCActivityCallback(heap->vm(), WTF::isMainThread())
 {
@@ -151,11 +151,26 @@ void GCActivityCallback::cancelTimer()
     m_delay = -1;
     g_source_set_ready_time(m_timer.get(), -1);
 }
+#elif PLATFORM(SLING)
+void GCActivityCallback::scheduleTimer(double newDelay)
+{
+    if (newDelay * timerSlop > m_delay)
+        return;
+    stop();
+    m_delay = newDelay;
+    startOneShot(newDelay);
+}
+
+void GCActivityCallback::cancelTimer()
+{
+    m_delay = s_hour;
+    stop();
+}
 #endif
 
 void GCActivityCallback::didAllocate(size_t bytes)
 {
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(SLING)
     if (!isEnabled())
         return;
 

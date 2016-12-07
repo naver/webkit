@@ -103,6 +103,10 @@ public:
     virtual bool implementsDidNotHandleWheelEvent() const { return false; }
     virtual void didNotHandleWheelEvent(WebKit::WebPageProxy*, const WebKit::NativeWebWheelEvent&) { }
 
+#if PLATFORM(SLING)
+    virtual void hasTouchEventHandlers(WebKit::WebPageProxy*, bool) { }
+#endif
+
     virtual bool toolbarsAreVisible(WebKit::WebPageProxy*) { return true; }
     virtual void setToolbarsAreVisible(WebKit::WebPageProxy*, bool) { }
     virtual bool menuBarIsVisible(WebKit::WebPageProxy*) { return true; }

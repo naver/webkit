@@ -26,7 +26,9 @@
 #ifndef PageLoadTestClient_h
 #define PageLoadTestClient_h
 
+#if USE(CF)
 #include <CoreFoundation/CFDate.h>
+#endif
 #include <WebKit/WebKit.h>
 #include <wtf/Assertions.h>
 #include <wtf/HashSet.h>
@@ -56,15 +58,22 @@ public:
         if (!isValid())
             return;
 
+#if USE(CF)
         CFRunLoopTimerInvalidate(m_timer.get());
+#endif
         m_timer = nullptr;
     }
 
     bool isValid() const
     {
+#if USE(CF)
         return m_timer && CFRunLoopTimerIsValid(m_timer.get());
+#else
+        return false;
+#endif
     }
 
+#if USE(CF)
     void schedule(CFTimeInterval interval, bool repeating)
     {
         ASSERT(!isValid());
@@ -75,10 +84,11 @@ public:
 
         CFRunLoopAddTimer(CFRunLoopGetCurrent(), m_timer.get(), kCFRunLoopCommonModes);
     }
-
+#endif
 private:
     void fire() { (m_object->*m_function)(this); }
 
+#if USE(CF)
     static void runLoopTimerFired(CFRunLoopTimerRef timerRef, void* info)
     {
         Timer* timer = static_cast<Timer*>(info);
@@ -94,11 +104,16 @@ private:
             timer->fire();
         }
     }
+#endif
 
     TimerFiredClass* m_object;
     TimerFiredFunction m_function;
 
+#if USE(CF)
     RetainPtr<CFRunLoopTimerRef> m_timer;
+#else
+    std::unique_ptr<int> m_timer;
+#endif
 };
 
 class MiniBrowser;
@@ -127,17 +142,21 @@ private:
     void clearPageLoadState();
     bool shouldConsiderPageLoadEnded() const;
 
+#if USE(CF)
     virtual void pageLoadStartedAtTime(CFAbsoluteTime);
     virtual void pageLoadEndedAtTime(CFAbsoluteTime);
+#endif
     void dumpRunStatistics();
 
     MiniBrowser* m_host;
+#if USE(CF)
     CFAbsoluteTime m_pageLoadEndTime { 0 };
     CFTimeInterval m_totalTime { 0 };
     CFTimeInterval m_totalSquareRootsOfTime { 0 };
     CFTimeInterval m_longestTime { 0 };
     Vector<CFAbsoluteTime> m_startTimes;
     Vector<CFAbsoluteTime> m_endTimes;
+#endif
     HashSet<uint64_t> m_loadingSubresources;
     Timer<PageLoadTestClient> m_waitForLoadToReallyEnd;
 #if OS(WINDOWS)

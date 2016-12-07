@@ -100,6 +100,7 @@
 #include <sys/resource.h>
 #endif
 
+#if USE(CF)
 #include <CoreFoundation/CoreFoundation.h>
 
 #if OS(WINDOWS)
@@ -158,6 +159,7 @@
 #endif // OS(WINDOWS)
 
 #endif
+#endif // USE(CF)
 
 #ifdef __OBJC__
 #if PLATFORM(IOS)

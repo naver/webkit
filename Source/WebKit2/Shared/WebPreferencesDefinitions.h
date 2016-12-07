@@ -325,6 +325,30 @@
     macro(PictographFontFamily, pictographFontFamily, String, String, "Times", "", "") \
     \
 
+#elif PLATFORM(SLING)
+
+#if OS(WINDOWS)
+#define DEFAULT_STANDARD_FONT_FAMILY "Times New Roman"
+#define DEFAULT_SANS_SERIF_FONT_FAMILY "Arial"
+#define DEFAULT_SERIF_FONT_FAMILY "Times New Roman"
+#define DEFAULT_PICTOGRAPH_FONT_FAMILY "Segoe UI Symbol"
+#else
+#define DEFAULT_STANDARD_FONT_FAMILY "Times"
+#define DEFAULT_SANS_SERIF_FONT_FAMILY "Helvetica"
+#define DEFAULT_SERIF_FONT_FAMILY "Times"
+#define DEFAULT_PICTOGRAPH_FONT_FAMILY "Times"
+#endif
+
+#define FOR_EACH_WEBKIT_FONT_FAMILY_PREFERENCE(macro) \
+    macro(StandardFontFamily, standardFontFamily, String, String, DEFAULT_STANDARD_FONT_FAMILY, "", "") \
+    macro(CursiveFontFamily, cursiveFontFamily, String, String, "Comic Sans MS", "", "") \
+    macro(FantasyFontFamily, fantasyFontFamily, String, String, "Impact", "", "") \
+    macro(FixedFontFamily, fixedFontFamily, String, String, "Courier New", "", "") \
+    macro(SansSerifFontFamily, sansSerifFontFamily, String, String, DEFAULT_SANS_SERIF_FONT_FAMILY, "", "") \
+    macro(SerifFontFamily, serifFontFamily, String, String, DEFAULT_SERIF_FONT_FAMILY, "", "") \
+    macro(PictographFontFamily, pictographFontFamily, String, String, DEFAULT_PICTOGRAPH_FONT_FAMILY, "", "") \
+    \
+
 #endif
 
 #define FOR_EACH_WEBKIT_STRING_PREFERENCE(macro) \

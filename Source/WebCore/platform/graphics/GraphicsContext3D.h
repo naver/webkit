@@ -43,7 +43,7 @@
 #endif
 
 // FIXME: Find a better way to avoid the name confliction for NO_ERROR.
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || COMPILER(MSVC)
 #undef NO_ERROR
 #elif PLATFORM(GTK)
 // This define is from the X11 headers, but it's used below, so we must undefine it.
@@ -60,7 +60,7 @@
 #include <wtf/RetainPtr.h>
 OBJC_CLASS CALayer;
 OBJC_CLASS WebGLLayer;
-#elif PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(WIN_CAIRO)
+#elif PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(WIN_CAIRO) || PLATFORM(SLING)
 typedef unsigned int GLuint;
 #endif
 
@@ -677,7 +677,7 @@ public:
         ALREADY_SIGNALED = 0x911A,
         TIMEOUT_EXPIRED = 0x911B,
         CONDITION_SATISFIED = 0x911C,
-#if PLATFORM(WIN)
+#if PLATFORM(WIN) || COMPILER(MSVC)
         WAIT_FAILED_WIN = 0x911D,
 #else
         WAIT_FAILED = 0x911D,
@@ -780,6 +780,11 @@ public:
     PlatformGraphicsContext3D platformGraphicsContext3D();
     Platform3DObject platformTexture() const;
     PlatformLayer* platformLayer() const;
+#endif
+#if PLATFORM(SLING)
+    bool isContextDestroyedElsewhere() const { return m_isDestroyedElsewhere; }
+    void setContextWasDestroyedElsewhere() { m_isDestroyedElsewhere = true; }
+    ANGLEWebKitBridge& getCompiler(){ return m_compiler; }
 #endif
 
     bool makeContextCurrent();
@@ -1297,7 +1302,7 @@ private:
     bool reshapeFBOs(const IntSize&);
     void resolveMultisamplingIfNecessary(const IntRect& = IntRect());
     void attachDepthAndStencilBufferIfNeeded(GLuint internalDepthStencilFormat, int width, int height);
-#if PLATFORM(EFL) && USE(GRAPHICS_SURFACE)
+#if (PLATFORM(EFL) || PLATFORM(SLING)) && USE(GRAPHICS_SURFACE)
     void createGraphicsSurfaces(const IntSize&);
 #endif
 
@@ -1405,7 +1410,7 @@ private:
 
     std::unique_ptr<ShaderNameHash> nameHashMapForShaders;
 
-#if ((PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(WIN)) && USE(OPENGL_ES_2))
+#if ((PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(WIN) || PLATFORM(SLING)) && USE(OPENGL_ES_2))
     friend class Extensions3DOpenGLES;
     std::unique_ptr<Extensions3DOpenGLES> m_extensions;
 #else
@@ -1413,6 +1418,10 @@ private:
     std::unique_ptr<Extensions3DOpenGL> m_extensions;
 #endif
     friend class Extensions3DOpenGLCommon;
+
+#if PLATFORM(SLING)
+    bool m_isDestroyedElsewhere;
+#endif
 
     Attributes m_attrs;
     RenderStyle m_renderStyle;

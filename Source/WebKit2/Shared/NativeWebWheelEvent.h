@@ -54,6 +54,8 @@ public:
     NativeWebWheelEvent(GdkEvent*);
 #elif PLATFORM(EFL)
     NativeWebWheelEvent(const Evas_Event_Mouse_Wheel*, const WebCore::AffineTransform& toWebContent, const WebCore::AffineTransform& toDeviceScreen);
+#else
+    NativeWebWheelEvent(WebWheelEvent&&);
 #endif
 
 #if USE(APPKIT)
@@ -64,6 +66,8 @@ public:
     const Evas_Event_Mouse_Wheel* nativeEvent() const { return m_nativeEvent; }
 #elif PLATFORM(IOS)
     const void* nativeEvent() const { return 0; }
+#elif PLATFORM(SLING)
+    const void* nativeEvent() const { return this; }
 #endif
 
 private:

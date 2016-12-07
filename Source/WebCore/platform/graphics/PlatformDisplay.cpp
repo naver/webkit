@@ -42,6 +42,10 @@
 #include "PlatformDisplayWin.h"
 #endif
 
+#if PLATFORM(SLING)
+#include "PlatformDisplaySling.h"
+#endif
+
 #if PLATFORM(GTK)
 #include <gdk/gdk.h>
 #endif
@@ -64,6 +68,10 @@
 
 namespace WebCore {
 
+#if PLATFORM(SLING)
+static std::unique_ptr<PlatformDisplay> display;
+#endif
+
 std::unique_ptr<PlatformDisplay> PlatformDisplay::createPlatformDisplay()
 {
 #if PLATFORM(GTK)
@@ -84,6 +92,8 @@ std::unique_ptr<PlatformDisplay> PlatformDisplay::createPlatformDisplay()
     return std::make_unique<PlatformDisplayX11>(static_cast<Display*>(ecore_x_display_get()));
 #elif PLATFORM(WIN)
     return std::make_unique<PlatformDisplayWin>();
+#elif PLATFORM(SLING)
+    return std::make_unique<PlatformDisplaySling>();
 #endif
 
 #if PLATFORM(X11)
@@ -96,13 +106,25 @@ std::unique_ptr<PlatformDisplay> PlatformDisplay::createPlatformDisplay()
 
 PlatformDisplay& PlatformDisplay::sharedDisplay()
 {
+#if PLATFORM(SLING)
+    if (!display)
+        display = createPlatformDisplay();
+#else
     static std::once_flag onceFlag;
     static std::unique_ptr<PlatformDisplay> display;
     std::call_once(onceFlag, []{
         display = createPlatformDisplay();
     });
+#endif
     return *display;
 }
+
+#if PLATFORM(SLING)
+void PlatformDisplay::destroySharedDisplay()
+{
+    display.reset();
+}
+#endif
 
 PlatformDisplay::PlatformDisplay()
 #if USE(EGL)
@@ -132,7 +154,7 @@ void PlatformDisplay::initializeEGLDisplay()
 
     if (m_eglDisplay == EGL_NO_DISPLAY) {
 // EGL is optionally soft linked on Windows.
-#if PLATFORM(WIN)
+#if COMPILER(MSVC)
         auto eglGetDisplay = eglGetDisplayPtr();
         if (!eglGetDisplay)
             return;

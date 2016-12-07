@@ -80,6 +80,10 @@
 #include <wtf/Vector.h>
 #include <wtf/text/CString.h>
 
+#if PLATFORM(SLING)
+#include "SharedBuffer.h"
+#endif
+
 namespace WebCore {
 
 const int selectTimeoutMS = 5;
@@ -310,8 +314,17 @@ static void handleLocalReceiveResponse (CURL* handle, ResourceHandle* job, Resou
     URL url = getCurlEffectiveURL(handle);
     ASSERT(url.isValid());
     d->m_response.setURL(url);
+#if PLATFORM(SLING)
+    if (d->client()) {
+        if (d->client()->usesAsyncCallbacks())
+            d->client()->didReceiveResponseAsync(job, ResourceResponse(d->m_response));
+        else
+            d->client()->didReceiveResponse(job, ResourceResponse(d->m_response));
+    }
+#else
      if (d->client())
          d->client()->didReceiveResponse(job, ResourceResponse(d->m_response));
+#endif
      d->m_response.setResponseFired(true);
 }
 
@@ -347,7 +360,12 @@ static size_t writeCallback(void* ptr, size_t size, size_t nmemb, void* data)
     if (d->m_multipartHandle)
         d->m_multipartHandle->contentReceived(static_cast<const char*>(ptr), totalSize);
     else if (d->client()) {
+#if PLATFORM(SLING)
+        Ref<SharedBuffer> buffer = SharedBuffer::create(static_cast<char*>(ptr), totalSize);
+        d->client()->didReceiveBuffer(job, WTFMove(buffer), 0);
+#else
         d->client()->didReceiveData(job, static_cast<char*>(ptr), totalSize, 0);
+#endif
         CurlCacheManager::getInstance().didReceiveData(*job, static_cast<char*>(ptr), totalSize);
     }
 
@@ -558,7 +576,14 @@ static size_t headerCallback(char* ptr, size_t size, size_t nmemb, void* data)
                     }
                 }
             }
+#if PLATFORM(SLING)
+            if (client->usesAsyncCallbacks())
+                client->didReceiveResponseAsync(job, ResourceResponse(d->m_response));
+            else
+                client->didReceiveResponse(job, ResourceResponse(d->m_response));
+#else
             client->didReceiveResponse(job, ResourceResponse(d->m_response));
+#endif
             CurlCacheManager::getInstance().didReceiveResponse(*job, d->m_response);
         }
         d->m_response.setResponseFired(true);
@@ -1000,8 +1025,17 @@ void ResourceHandleManager::dispatchSynchronousJob(ResourceHandle* job)
         error.setSSLErrors(handle->m_sslErrors);
         handle->client()->didFail(job, error);
     } else {
+#if PLATFORM(SLING)
+        if (handle->client()) {
+            if (handle->client()->usesAsyncCallbacks())
+                handle->client()->didReceiveResponseAsync(job, ResourceResponse(handle->m_response));
+            else
+                handle->client()->didReceiveResponse(job, ResourceResponse(handle->m_response));
+        }
+#else
         if (handle->client())
             handle->client()->didReceiveResponse(job, ResourceResponse(handle->m_response));
+#endif
     }
 
 #if ENABLE(WEB_TIMING)

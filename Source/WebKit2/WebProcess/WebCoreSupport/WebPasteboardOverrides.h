@@ -35,7 +35,7 @@
 namespace WebKit {
 
 class WebPasteboardOverrides {
-    friend class NeverDestroyed<WebPasteboardOverrides>;
+    friend class WTF::NeverDestroyed<WebPasteboardOverrides>;
 public:
     static WebPasteboardOverrides& sharedPasteboardOverrides();
 

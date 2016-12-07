@@ -42,6 +42,10 @@
 #include <DispatchQueueEfl.h>
 #endif
 
+#if PLATFORM(SLING)
+#include "sling/DispatchQueue.h"
+#endif
+
 #if USE(WINDOWS_EVENT_LOOP)
 #include <wtf/Vector.h>
 #endif
@@ -75,9 +79,9 @@ public:
 
     WTF_EXPORT_PRIVATE static void concurrentApply(size_t iterations, const std::function<void (size_t index)>&);
 
-#if USE(EFL_EVENT_LOOP)
-    void registerSocketEventHandler(int, std::function<void ()>);
-    void unregisterSocketEventHandler(int);
+#if USE(EFL_EVENT_LOOP) || PLATFORM(SLING)
+    WTF_EXPORT_PRIVATE void registerSocketEventHandler(int, std::function<void ()>);
+    WTF_EXPORT_PRIVATE void unregisterSocketEventHandler(int);
 #elif USE(COCOA_EVENT_LOOP)
     dispatch_queue_t dispatchQueue() const { return m_dispatchQueue; }
 #elif USE(GLIB_EVENT_LOOP) || USE(GENERIC_EVENT_LOOP)
@@ -99,7 +103,7 @@ private:
     void performWorkOnRegisteredWorkThread();
 #endif
 
-#if USE(EFL_EVENT_LOOP)
+#if USE(EFL_EVENT_LOOP) || PLATFORM(SLING)
     RefPtr<DispatchQueue> m_dispatchQueue;
 #elif USE(COCOA_EVENT_LOOP)
     static void executeFunction(void*);

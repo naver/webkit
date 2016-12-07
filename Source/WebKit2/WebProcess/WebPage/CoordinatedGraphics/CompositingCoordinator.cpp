@@ -139,6 +139,19 @@ double CompositingCoordinator::timestamp() const
     return document->domWindow() ? document->domWindow()->nowTimestamp() : document->monotonicTimestamp();
 }
 
+#if PLATFORM(SLING)
+void CompositingCoordinator::reset()
+{
+    clearPendingStateChanges();
+
+    for (auto& registeredLayer : m_registeredLayers.values()) {
+        registeredLayer->reset();
+        m_state.layersToCreate.append(registeredLayer->id());
+        registeredLayer->setNeedsVisibleRectAdjustment();
+    }
+}
+#endif
+
 void CompositingCoordinator::syncDisplayState()
 {
 #if ENABLE(REQUEST_ANIMATION_FRAME) && !USE(REQUEST_ANIMATION_FRAME_TIMER) && !USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)

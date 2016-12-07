@@ -77,7 +77,7 @@ protected:
         , m_delay(s_decade)
     {
     }
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || PLATFORM(SLING)
     static constexpr double s_hour = 3600;
     GCActivityCallback(VM* vm, bool flag)
         : HeapTimer(vm)
@@ -106,7 +106,7 @@ protected:
 protected:
     GCActivityCallback(Heap*, CFRunLoopRef);
 #endif
-#if USE(CF) || USE(GLIB)
+#if USE(CF) || USE(GLIB) || PLATFORM(SLING)
 protected:
     void cancelTimer();
     void scheduleTimer(double);

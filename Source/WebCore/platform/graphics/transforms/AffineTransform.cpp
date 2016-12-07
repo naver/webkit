@@ -55,7 +55,11 @@ AffineTransform::AffineTransform()
 }
 
 AffineTransform::AffineTransform(double a, double b, double c, double d, double e, double f)
+#if COMPILER(MSVC)
+    : m_transform(std::array<double, 6>{ { a, b, c, d, e, f } })
+#else
     : m_transform{ { a, b, c, d, e, f } }
+#endif
 {
 }
 #endif

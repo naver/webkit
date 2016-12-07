@@ -244,5 +244,24 @@ void CoordinatedLayerTreeHost::commitScrollOffset(uint32_t layerID, const WebCor
     m_coordinator.commitScrollOffset(layerID, offset);
 }
 
+#if PLATFORM(SLING)
+void CoordinatedLayerTreeHost::resetCoordinatedGraphicsState(uint64_t stateID)
+{
+    setLayerFlushSchedulingEnabled(false);
+
+    m_coordinator.reset();
+}
+
+void CoordinatedLayerTreeHost::requestCoordinatedGraphicsStateAfterReset(uint64_t stateID)
+{
+    setLayerFlushSchedulingEnabled(true);
+    cancelPendingLayerFlush();
+
+    m_isWaitingForRenderer = true;
+
+    m_webPage.send(Messages::CoordinatedLayerTreeHostProxy::WillCommitCoordinatedGraphicsStateAfterReset(stateID));
+}
+#endif
+
 } // namespace WebKit
 #endif // USE(COORDINATED_GRAPHICS)

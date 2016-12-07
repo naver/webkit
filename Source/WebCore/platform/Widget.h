@@ -65,6 +65,10 @@ typedef GtkWidget* PlatformWidget;
 typedef Evas_Object* PlatformWidget;
 #endif
 
+#if PLATFORM(SLING)
+typedef void* PlatformWidget;
+#endif
+
 typedef PlatformWidget PlatformPageClient;
 
 namespace WebCore {

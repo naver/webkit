@@ -193,18 +193,7 @@ bool GLPlatformContext::makeCurrent(GLPlatformSurface* surface)
 {
     m_contextLost = false;
 
-    if (isCurrentContext() && (!surface || surface->isCurrentDrawable()))
-        return true;
-
-    GLPlatformContext* currentContext = 0;
-
-    if (!surface || (surface && !surface->drawable()))
-        platformReleaseCurrent();
-    else if (platformMakeCurrent(surface)) {
-        currentContext = this;
-        surface->onMakeCurrent();
-    }
-
+#if PLATFORM(SLING)
     if (m_resetLostContext) {
         resolveResetStatusExtension();
 
@@ -227,6 +216,44 @@ bool GLPlatformContext::makeCurrent(GLPlatformSurface* surface)
             }
         }
     }
+#endif
+
+    if (isCurrentContext() && (!surface || surface->isCurrentDrawable()))
+        return true;
+
+    GLPlatformContext* currentContext = 0;
+
+    if (!surface || (surface && !surface->drawable()))
+        platformReleaseCurrent();
+    else if (platformMakeCurrent(surface)) {
+        currentContext = this;
+        surface->onMakeCurrent();
+    }
+
+#if !PLATFORM(SLING)
+    if (m_resetLostContext) {
+        resolveResetStatusExtension();
+
+        if (glGetGraphicsResetStatus) {
+            GLenum status = glGetGraphicsResetStatus();
+
+            switch (status) {
+            case PLATFORMCONTEXT_NO_ERROR:
+                break;
+            case PLATFORMCONTEXT_GUILTY_CONTEXT_RESET:
+                m_contextLost = true;
+                break;
+            case PLATFORMCONTEXT_INNOCENT_CONTEXT_RESET:
+                break;
+            case PLATFORMCONTEXT_UNKNOWN_CONTEXT_RESET:
+                m_contextLost = true;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+#endif
 
     return currentContext;
 }

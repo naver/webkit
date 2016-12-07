@@ -44,8 +44,10 @@ Extensions3DOpenGLES::Extensions3DOpenGLES(GraphicsContext3D* context)
     , m_supportsOESvertexArrayObject(false)
     , m_supportsIMGMultisampledRenderToTexture(false)
     , m_supportsANGLEinstancedArrays(false)
+#if !PLATFORM(SLING)
     , m_glFramebufferTexture2DMultisampleIMG(0)
     , m_glRenderbufferStorageMultisampleIMG(0)
+#endif
     , m_glBindVertexArrayOES(0)
     , m_glDeleteVertexArraysOES(0)
     , m_glGenVertexArraysOES(0)
@@ -54,9 +56,11 @@ Extensions3DOpenGLES::Extensions3DOpenGLES(GraphicsContext3D* context)
     , m_glReadnPixelsEXT(0)
     , m_glGetnUniformfvEXT(0)
     , m_glGetnUniformivEXT(0)
+#if !PLATFORM(SLING)
     , m_glVertexAttribDivisorANGLE(nullptr)
     , m_glDrawArraysInstancedANGLE(nullptr)
     , m_glDrawElementsInstancedANGLE(nullptr)
+#endif
 {
 }
 
@@ -66,17 +70,34 @@ Extensions3DOpenGLES::~Extensions3DOpenGLES()
 
 void Extensions3DOpenGLES::framebufferTexture2DMultisampleIMG(unsigned long target, unsigned long attachment, unsigned long textarget, unsigned int texture, int level, unsigned long samples)
 {
+#if !PLATFORM(SLING)
     if (m_glFramebufferTexture2DMultisampleIMG)
         m_glFramebufferTexture2DMultisampleIMG(target, attachment, textarget, texture, level, samples);
     else
+#else
+    UNUSED_PARAM(target);
+    UNUSED_PARAM(attachment);
+    UNUSED_PARAM(textarget);
+    UNUSED_PARAM(texture);
+    UNUSED_PARAM(level);
+    UNUSED_PARAM(samples);
+#endif
         m_context->synthesizeGLError(GL_INVALID_OPERATION);
 }
 
 void Extensions3DOpenGLES::renderbufferStorageMultisampleIMG(unsigned long target, unsigned long samples, unsigned long internalformat, unsigned long width, unsigned long height)
 {
+#if !PLATFORM(SLING)
     if (m_glRenderbufferStorageMultisampleIMG)
         m_glRenderbufferStorageMultisampleIMG(target, samples, internalformat, width, height);
     else
+#else
+    UNUSED_PARAM(target);
+    UNUSED_PARAM(samples);
+    UNUSED_PARAM(internalformat);
+    UNUSED_PARAM(width);
+    UNUSED_PARAM(height);
+#endif
         m_context->synthesizeGLError(GL_INVALID_OPERATION);
 }
 
@@ -87,9 +108,17 @@ void Extensions3DOpenGLES::blitFramebuffer(long /* srcX0 */, long /* srcY0 */, l
 
 void Extensions3DOpenGLES::renderbufferStorageMultisample(unsigned long target, unsigned long samples, unsigned long internalformat, unsigned long width, unsigned long height)
 {
+#if !PLATFORM(SLING)
     if (m_glRenderbufferStorageMultisampleIMG)
         renderbufferStorageMultisampleIMG(target, samples, internalformat, width, height);
     else
+#else
+    UNUSED_PARAM(target);
+    UNUSED_PARAM(samples);
+    UNUSED_PARAM(internalformat);
+    UNUSED_PARAM(width);
+    UNUSED_PARAM(height);
+#endif
         notImplemented();
 }
 
@@ -233,6 +262,7 @@ void Extensions3DOpenGLES::getnUniformivEXT(GC3Duint program, int location, GC3D
 
 void Extensions3DOpenGLES::drawArraysInstanced(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount)
 {
+#if !PLATFORM(SLING)
     if (!m_glDrawArraysInstancedANGLE) {
         m_context->synthesizeGLError(GL_INVALID_OPERATION);
         return;
@@ -240,10 +270,17 @@ void Extensions3DOpenGLES::drawArraysInstanced(GC3Denum mode, GC3Dint first, GC3
 
     m_context->makeContextCurrent();
     m_glDrawArraysInstancedANGLE(mode, first, count, primcount);
+#else
+    UNUSED_PARAM(mode);
+    UNUSED_PARAM(first);
+    UNUSED_PARAM(count);
+    UNUSED_PARAM(primcount);
+#endif
 }
 
 void Extensions3DOpenGLES::drawElementsInstanced(GC3Denum mode, GC3Dsizei count, GC3Denum type, long long offset, GC3Dsizei primcount)
 {
+#if !PLATFORM(SLING)
     if (!m_glDrawElementsInstancedANGLE) {
         m_context->synthesizeGLError(GL_INVALID_OPERATION);
         return;
@@ -251,10 +288,18 @@ void Extensions3DOpenGLES::drawElementsInstanced(GC3Denum mode, GC3Dsizei count,
 
     m_context->makeContextCurrent();
     m_glDrawElementsInstancedANGLE(mode, count, type, reinterpret_cast<GLvoid*>(static_cast<intptr_t>(offset)), primcount);
+#else
+    UNUSED_PARAM(mode);
+    UNUSED_PARAM(count);
+    UNUSED_PARAM(type);
+    UNUSED_PARAM(offset);
+    UNUSED_PARAM(primcount);
+#endif
 }
 
 void Extensions3DOpenGLES::vertexAttribDivisor(GC3Duint index, GC3Duint divisor)
 {
+#if !PLATFORM(SLING)
     if (!m_glVertexAttribDivisorANGLE) {
         m_context->synthesizeGLError(GL_INVALID_OPERATION);
         return;
@@ -262,6 +307,10 @@ void Extensions3DOpenGLES::vertexAttribDivisor(GC3Duint index, GC3Duint divisor)
 
     m_context->makeContextCurrent();
     m_glVertexAttribDivisorANGLE(index, divisor);
+#else
+    UNUSED_PARAM(index);
+    UNUSED_PARAM(divisor);
+#endif
 }
 
 bool Extensions3DOpenGLES::supportsExtension(const String& name)
@@ -273,20 +322,24 @@ bool Extensions3DOpenGLES::supportsExtension(const String& name)
             m_glDeleteVertexArraysOES = reinterpret_cast<PFNGLDELETEVERTEXARRAYSOESPROC>(eglGetProcAddress("glDeleteVertexArraysOES"));
             m_glIsVertexArrayOES = reinterpret_cast<PFNGLISVERTEXARRAYOESPROC>(eglGetProcAddress("glIsVertexArrayOES"));
             m_supportsOESvertexArrayObject = true;
+#if !PLATFORM(SLING)
         } else if (!m_supportsIMGMultisampledRenderToTexture && name == "GL_IMG_multisampled_render_to_texture") {
             m_glFramebufferTexture2DMultisampleIMG = reinterpret_cast<PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMGPROC>(eglGetProcAddress("glFramebufferTexture2DMultisampleIMG"));
             m_glRenderbufferStorageMultisampleIMG = reinterpret_cast<PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMGPROC>(eglGetProcAddress("glRenderbufferStorageMultisampleIMG"));
             m_supportsIMGMultisampledRenderToTexture = true;
+#endif
         } else if (!m_glGetGraphicsResetStatusEXT && name == "GL_EXT_robustness") {
             m_glGetGraphicsResetStatusEXT = reinterpret_cast<PFNGLGETGRAPHICSRESETSTATUSEXTPROC>(eglGetProcAddress("glGetGraphicsResetStatusEXT"));
             m_glReadnPixelsEXT = reinterpret_cast<PFNGLREADNPIXELSEXTPROC>(eglGetProcAddress("glReadnPixelsEXT"));
             m_glGetnUniformfvEXT = reinterpret_cast<PFNGLGETNUNIFORMFVEXTPROC>(eglGetProcAddress("glGetnUniformfvEXT"));
             m_glGetnUniformivEXT = reinterpret_cast<PFNGLGETNUNIFORMIVEXTPROC>(eglGetProcAddress("glGetnUniformivEXT"));
+#if !PLATFORM(SLING)
         } else if (!m_supportsANGLEinstancedArrays && name == "GL_ANGLE_instanced_arrays") {
             m_glVertexAttribDivisorANGLE = reinterpret_cast<PFNGLVERTEXATTRIBDIVISORANGLEPROC>(eglGetProcAddress("glVertexAttribDivisorANGLE"));
             m_glDrawArraysInstancedANGLE = reinterpret_cast<PFNGLDRAWARRAYSINSTANCEDANGLEPROC >(eglGetProcAddress("glDrawArraysInstancedANGLE"));
             m_glDrawElementsInstancedANGLE = reinterpret_cast<PFNGLDRAWELEMENTSINSTANCEDANGLEPROC >(eglGetProcAddress("glDrawElementsInstancedANGLE"));
             m_supportsANGLEinstancedArrays = true;
+#endif
         } else if (name == "GL_EXT_draw_buffers") {
             // FIXME: implement the support.
             return false;

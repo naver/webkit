@@ -185,6 +185,9 @@ all : \
 	@echo Generating message receiver for $*...
 	@python $(WebKit2)/Scripts/generate-messages-header.py $< > $@
 
+# Mac-specific rules
+
+ifeq ($(PLATFORM_NAME),macosx)
 
 # Some versions of clang incorrectly strip out // comments in c89 code.
 # Use -traditional as a workaround, but only when needed since that causes
@@ -209,6 +212,8 @@ all: $(SANDBOX_PROFILES)
 %.sb : %.sb.in
 	@echo Pre-processing $* sandbox profile...
 	$(CC) $(SDK_FLAGS) $(TEXT_PREPROCESSOR_FLAGS) $(FRAMEWORK_FLAGS) $(HEADER_FLAGS) -include "wtf/Platform.h" $< > $@
+
+endif # macosx
 
 AUTOMATION_PROTOCOL_GENERATOR_SCRIPTS = \
 	$(JavaScriptCore_SCRIPTS_DIR)/cpp_generator_templates.py \

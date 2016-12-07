@@ -100,7 +100,11 @@ void WebBackForwardListProxy::addItemFromUIProcess(uint64_t itemID, Ref<HistoryI
     ASSERT(!historyItemToIDMap().contains(item.ptr()));
     ASSERT(!idToHistoryItemMap().contains(itemID));
 
+#if !COMPILER(MSVC)
     historyItemToIDMap().set<ItemAndPageID>(item.ptr(), { .itemID = itemID, .pageID = pageID });
+#else
+    historyItemToIDMap().set<ItemAndPageID>(item.ptr(), ItemAndPageID { itemID, pageID });
+#endif
     idToHistoryItemMap().set(itemID, item.ptr());
 }
 
@@ -154,7 +158,11 @@ void WebBackForwardListProxy::addItem(Ref<HistoryItem>&& item)
 
     m_associatedItemIDs.add(itemID);
 
+#if !COMPILER(MSVC)
     historyItemToIDMap().set<ItemAndPageID>(item.ptr(), { .itemID = itemID, .pageID = m_page->pageID() });
+#else
+    historyItemToIDMap().set<ItemAndPageID>(item.ptr(), ItemAndPageID { itemID, m_page->pageID() });
+#endif
     idToHistoryItemMap().set(itemID, item.ptr());
 
     updateBackForwardItem(itemID, m_page->pageID(), item.ptr());

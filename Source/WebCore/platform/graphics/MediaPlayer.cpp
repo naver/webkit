@@ -85,6 +85,9 @@
 
 #if PLATFORM(WIN) && USE(AVFOUNDATION) && !USE(GSTREAMER)
 #include "MediaPlayerPrivateAVFoundationCF.h"
+#elif PLATFORM(SLING)
+#include "MediaPlayerPrivateSling.h"
+#define PlatformMediaEngineClassName MediaPlayerPrivateSling
 #endif
 
 namespace WebCore {

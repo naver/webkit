@@ -25,13 +25,15 @@ import subprocess
 import sys
 
 # First release to support --exit-on-error option
-jhbuild_revision = 'f524fbe120ebb4b7d209ce0d035cd3d2e4a66bd4'
+jhbuild_revision = 'c0cb46177d79189ffe0f760703c732f1c7ea8b29' #'f524fbe120ebb4b7d209ce0d035cd3d2e4a66bd4'
 
 def determine_platform():
     if '--efl' in sys.argv:
         return "efl";
     if '--gtk' in sys.argv:
         return "gtk";
+    if '--sling' in sys.argv:
+        return "sling";
     raise ValueError('No platform specified for jhbuild-wrapper.')
 
 try:
@@ -123,4 +125,4 @@ if os.environ.has_key('UNDER_JHBUILD') and os.environ.has_key('ACLOCAL_FLAGS'):
 
 ensure_jhbuild(platform)
 
-os.execve(jhbuild_path, [jhbuild_path, '--exit-on-error', '--no-interact', '-f', jhbuildutils.get_config_file_for_platform(platform)] + sys.argv[2:], os.environ)
+os.execve(jhbuild_path, [jhbuild_path, '--no-interact', '-f', jhbuildutils.get_config_file_for_platform(platform)] + sys.argv[2:], os.environ)

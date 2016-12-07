@@ -32,13 +32,24 @@
 #include <wtf/Assertions.h>
 #include <wtf/text/CString.h>
 
+#if PLATFORM(SLING)
+#include "PlatformBridgeNatives.h"
+#endif
+
 namespace WebCore {
 
 void FontCache::platformInit()
 {
     // It's fine to call FcInit multiple times per the documentation.
+#if PLATFORM(SLING)
+    String path((WebKit::PlatformBridge::getApplicationDirectoryPath() + std::string("/fonts")).c_str());
+
+    if (!FcInit(path.ascii().data()))
+        ASSERT_NOT_REACHED();
+#else
     if (!FcInit())
         ASSERT_NOT_REACHED();
+#endif
 }
 
 static RefPtr<FcPattern> createFontConfigPatternForCharacters(const UChar* characters, int bufferLength)

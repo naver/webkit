@@ -63,7 +63,7 @@ static void initializeLogFileOnce()
 
     char filenameSuffix[maxPathLength + 1];
 
-#if PLATFORM(WIN)
+#if OS(WINDOWS)
     _snprintf(filenameSuffix, sizeof(filenameSuffix), ".%d.txt", GetCurrentProcessId());
 #else
     snprintf(filenameSuffix, sizeof(filenameSuffix), ".%d.txt", getpid());
@@ -105,7 +105,7 @@ static void initializeLogFileOnce()
     char actualFilename[maxPathLength + 1];
 
     if (filename) {
-#if PLATFORM(WIN)
+#if OS(WINDOWS)
         _snprintf(actualFilename, sizeof(actualFilename), "%s%s", filename, filenameSuffix);
 #else
         snprintf(actualFilename, sizeof(actualFilename), "%s%s", filename, filenameSuffix);

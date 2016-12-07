@@ -28,6 +28,7 @@ set(ALL_PORTS
     JSCOnly
     Mac
     WinCairo
+    Sling
 )
 set(PORT "NOPORT" CACHE STRING "choose which WebKit port to build (one of ${ALL_PORTS})")
 

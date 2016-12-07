@@ -55,6 +55,11 @@ public:
 
     void commitScrollOffset(uint32_t layerID, const WebCore::IntSize& offset) override;
 
+#if PLATFORM(SLING)
+    void resetCoordinatedGraphicsState();
+    void requestCoordinatedGraphicsStateAfterReset();
+    void willCommitCoordinatedGraphicsStateAfterReset(uint64_t);
+#endif
 protected:
     void dispatchUpdate(std::function<void()>);
 
@@ -65,6 +70,12 @@ protected:
     RefPtr<CoordinatedGraphicsScene> m_scene;
     WebCore::FloatRect m_lastSentVisibleRect;
     WebCore::FloatPoint m_lastSentTrajectoryVector;
+#if PLATFORM(SLING)
+private:
+    // The state ID corresponding to our current layer tree host. Updated whenever we update
+    // state of the layer tree host.
+    uint64_t m_nextCoordinatedLayerTreeHostStateID;
+#endif
 };
 
 } // namespace WebKit

@@ -37,6 +37,9 @@ using namespace WebCore;
 CoordinatedLayerTreeHostProxy::CoordinatedLayerTreeHostProxy(CoordinatedDrawingAreaProxy* drawingAreaProxy)
     : m_drawingAreaProxy(drawingAreaProxy)
     , m_scene(adoptRef(new CoordinatedGraphicsScene(this)))
+#if PLATFORM(SLING)
+    , m_nextCoordinatedLayerTreeHostStateID(0)
+#endif
 {
     m_drawingAreaProxy->page().process().addMessageReceiver(Messages::CoordinatedLayerTreeHostProxy::messageReceiverName(), m_drawingAreaProxy->page().pageID(), *this);
 }
@@ -44,6 +47,9 @@ CoordinatedLayerTreeHostProxy::CoordinatedLayerTreeHostProxy(CoordinatedDrawingA
 CoordinatedLayerTreeHostProxy::~CoordinatedLayerTreeHostProxy()
 {
     m_drawingAreaProxy->page().process().removeMessageReceiver(Messages::CoordinatedLayerTreeHostProxy::messageReceiverName(), m_drawingAreaProxy->page().pageID());
+#if PLATFORM(SLING)
+    if (m_scene)
+#endif
     m_scene->detach();
 }
 
@@ -59,6 +65,9 @@ void CoordinatedLayerTreeHostProxy::dispatchUpdate(std::function<void()> functio
 
 void CoordinatedLayerTreeHostProxy::commitCoordinatedGraphicsState(const CoordinatedGraphicsState& graphicsState)
 {
+    if (!m_scene)
+        return;
+
     RefPtr<CoordinatedGraphicsScene> sceneProtector(m_scene);
     dispatchUpdate([=] {
         sceneProtector->commitSceneState(graphicsState);
@@ -94,6 +103,37 @@ void CoordinatedLayerTreeHostProxy::commitScrollOffset(uint32_t layerID, const I
 {
     m_drawingAreaProxy->page().process().send(Messages::CoordinatedLayerTreeHost::CommitScrollOffset(layerID, offset), m_drawingAreaProxy->page().pageID());
 }
+
+#if PLATFORM(SLING)
+void CoordinatedLayerTreeHostProxy::resetCoordinatedGraphicsState()
+{
+    ASSERT(isMainThread());
+
+    purgeBackingStores();
+
+    m_scene->detach();
+    m_scene = nullptr;
+
+    m_drawingAreaProxy->page().process().send(Messages::CoordinatedLayerTreeHost::ResetCoordinatedGraphicsState(++m_nextCoordinatedLayerTreeHostStateID), m_drawingAreaProxy->page().pageID());
+}
+
+void CoordinatedLayerTreeHostProxy::requestCoordinatedGraphicsStateAfterReset()
+{
+    m_drawingAreaProxy->page().process().send(Messages::CoordinatedLayerTreeHost::RequestCoordinatedGraphicsStateAfterReset(++m_nextCoordinatedLayerTreeHostStateID), m_drawingAreaProxy->page().pageID());
+}
+
+void CoordinatedLayerTreeHostProxy::willCommitCoordinatedGraphicsStateAfterReset(uint64_t stateID)
+{
+    ASSERT(isMainThread());
+
+    if (stateID != m_nextCoordinatedLayerTreeHostStateID)
+        return;
+
+    m_scene = adoptRef(new CoordinatedGraphicsScene(this));
+
+    m_drawingAreaProxy->willCommitCoordinatedGraphicsStateAfterReset();
+}
+#endif
 
 }
 #endif // USE(COORDINATED_GRAPHICS)

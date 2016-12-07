@@ -31,6 +31,11 @@
 #include <wtf/text/Base64.h>
 #include <wtf/win/GDIObject.h>
 
+#if USE(CAIRO_DWRITEFONT)
+#include "DWriteFontLoader.h"
+#include <dwrite.h>
+#endif
+
 namespace WebCore {
 
 FontCustomPlatformData::~FontCustomPlatformData()
@@ -65,7 +70,11 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(const FontDescription&
 
     auto hfont = adoptGDIObject(::CreateFontIndirect(&logFont));
 
+#if !USE(CAIRO_DWRITEFONT)
     cairo_font_face_t* fontFace = cairo_win32_font_face_create_for_hfont(hfont.get());
+#else
+    cairo_font_face_t* fontFace = cairo_dwrite_font_face_create_for_font_file(m_fontFile.get(), m_faceType);
+#endif
 
     FontPlatformData fontPlatformData(WTFMove(hfont), fontFace, size, bold, italic);
 
@@ -84,6 +93,35 @@ static String createUniqueFontName()
     return fontName;
 }
 
+#if USE(CAIRO_DWRITEFONT)
+static bool validateFontFile(IDWriteFontFile* fontFile, DWRITE_FONT_FACE_TYPE faceType)
+{
+    cairo_font_face_t* fontFace = cairo_dwrite_font_face_create_for_font_file(fontFile, faceType);
+    if (fontFace) {
+        cairo_font_face_destroy(fontFace);
+        return true;
+    }
+    return false;
+}
+
+// Rename the font and install the new font data into the system
+static bool renameAndActivateFontForDWrite(const SharedBuffer& fontData, const String& fontName, IDWriteFontFile** fontFile, DWRITE_FONT_FACE_TYPE* faceType)
+{
+    Vector<char> rewrittenFontData;
+    if (!renameFont(fontData, fontName, rewrittenFontData))
+        return false;
+
+    *fontFile = DWriteFontFileLoader::CreateDWriteFontFile(&rewrittenFontData, fontName.ascii().data());
+
+    BOOL isSupported;
+    DWRITE_FONT_FILE_TYPE fileType;
+    UINT32 numFaces;
+    (*fontFile)->Analyze(&isSupported, &fileType, faceType, &numFaces);
+
+    return validateFontFile(*fontFile, *faceType);
+}
+#endif
+
 std::unique_ptr<FontCustomPlatformData> createFontCustomPlatformData(SharedBuffer& buffer)
 {
     String fontName = createUniqueFontName();
@@ -92,7 +130,15 @@ std::unique_ptr<FontCustomPlatformData> createFontCustomPlatformData(SharedBuffe
     if (!fontReference)
         return nullptr;
 
+#if !USE(CAIRO_DWRITEFONT)
     return std::make_unique<FontCustomPlatformData>(fontReference, fontName);
+#else
+    IDWriteFontFile* fontFile;
+    DWRITE_FONT_FACE_TYPE faceType;
+    if (!renameAndActivateFontForDWrite(buffer, fontName, &fontFile, &faceType))
+        return nullptr;
+    return std::make_unique<FontCustomPlatformData>(fontReference, fontName, fontFile, faceType);
+#endif
 }
 
 bool FontCustomPlatformData::supportsFormat(const String& format)

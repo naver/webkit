@@ -103,6 +103,7 @@ use constant {
     Mac      => "Mac",
     JSCOnly  => "JSCOnly",
     WinCairo => "WinCairo",
+    Sling    => "Sling",
     Unknown  => "Unknown"
 };
 
@@ -451,6 +452,7 @@ sub argumentsForConfiguration()
     push(@args, '--efl') if isEfl();
     push(@args, '--jsc-only') if isJSCOnly();
     push(@args, '--wincairo') if isWinCairo();
+    push(@args, '--sling') if isSling();
     push(@args, '--inspector-frontend') if isInspectorFrontend();
     return @args;
 }
@@ -920,6 +922,9 @@ sub builtDylibPathForName
     if (isEfl()) {
         return "$configurationProductDir/lib/libewebkit2.so";
     }
+    if (isSling()) {
+        return "$configurationProductDir/lib/libslingwebkit.so";
+    }
     if (isIOSWebKit()) {
         return "$configurationProductDir/$libraryName.framework/$libraryName";
     }
@@ -1047,6 +1052,7 @@ sub determinePortName()
     my %argToPortName = (
         efl => Efl,
         gtk => GTK,
+        sling => Sling,
         'jsc-only' => JSCOnly,
         wincairo => WinCairo
     );
@@ -1079,6 +1085,7 @@ sub determinePortName()
                 --efl
                 --gtk
                 --jsc-only
+                --sling
             );
             die "Please specify which WebKit port to build using one of the following options:"
                 . "\n\t$portsChoice\n";
@@ -1104,6 +1111,11 @@ sub isEfl()
 sub isGtk()
 {
     return portName() eq GTK;
+}
+
+sub isSling()
+{
+    return portName() eq Sling;
 }
 
 sub isJSCOnly()
@@ -1494,7 +1506,7 @@ sub relativeScriptsDir()
 sub launcherPath()
 {
     my $relativeScriptsPath = relativeScriptsDir();
-    if (isGtk() || isEfl()) {
+    if (isGtk() || isEfl() || isSling()) {
         return "$relativeScriptsPath/run-minibrowser";
     } elsif (isAppleWebKit()) {
         return "$relativeScriptsPath/run-safari";
@@ -1810,8 +1822,10 @@ sub getJhbuildPath()
         push(@jhbuildPath, "DependenciesEFL");
     } elsif (isGtk()) {
         push(@jhbuildPath, "DependenciesGTK");
+    } elsif (isSling()) {
+        push(@jhbuildPath, "DependenciesSLING");
     } else {
-        die "Cannot get JHBuild path for platform that isn't GTK+ or EFL.\n";
+        die "Cannot get JHBuild path for platform that isn't GTK+ or EFL or Sling.\n";
     }
     return File::Spec->catdir(@jhbuildPath);
 }
@@ -1852,6 +1866,8 @@ sub wrapperPrefixIfNeeded()
             push(@prefix, "--efl");
         } elsif (isGtk()) {
             push(@prefix, "--gtk");
+        } elsif (isSling()) {
+            push(@prefix, "--sling");
         }
         push(@prefix, "run");
 
@@ -2000,6 +2016,18 @@ sub generateBuildSystemFromCMakeProject
         push @args, '-G "Visual Studio 14 2015 Win64"';
     }
 
+    if (isSling()) {
+        my $checkoutRoot = File::Spec->catdir(getJhbuildPath(), "Source");
+        my $ndkPath = File::Spec->catdir($checkoutRoot, "android-ndk-r12");
+        my $sdkPath = File::Spec->catdir($checkoutRoot, "android-sdk");
+
+        push @args, "-DCMAKE_TOOLCHAIN_FILE=$sourceDir/Tools/sling/android.toolchain.cmake";
+        push @args, "-DANDROID_NDK=$ndkPath";
+        push @args, "-DANDROID_SDK=$sdkPath";
+        push @args, "-DANDROID_TOOLCHAIN_NAME=clang";
+        push @args, "-DWEBKIT_LIBRARIES=$sourceDir/../../WebKitLibraries" if (!defined $ENV{'WEBKIT_LIBRARIES'} || !$ENV{'WEBKIT_LIBRARIES'});
+    }
+
     # Some ports have production mode, but build-webkit should always use developer mode.
     push @args, "-DDEVELOPER_MODE=ON" if isEfl() || isGtk() || isJSCOnly();
 
@@ -2080,6 +2108,10 @@ sub buildCMakeProjectOrExit($$$@)
 
     if (isGtk() && checkForArgumentAndRemoveFromARGV("--update-gtk")) {
         system("perl", "$sourceDir/Tools/Scripts/update-webkitgtk-libs") == 0 or die $!;
+    }
+
+    if (isSling()) {
+        system("perl", "$sourceDir/Tools/Scripts/update-webkitsling-libs") == 0 or die $!;
     }
 
     $returnCode = exitStatus(generateBuildSystemFromCMakeProject($prefixPath, @cmakeArgs));

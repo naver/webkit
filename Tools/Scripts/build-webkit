@@ -96,10 +96,11 @@ Usage: $programName [options] [options to pass to build system]
   --efl                             Build the EFL port
   --gtk                             Build the GTK+ port
   --wincairo                        Build using Cairo (rather than CoreGraphics) on Windows
+  --sling                           Build the Sling Android port
 
   --inspector-frontend              Copy Web Inspector user interface resources to the build directory
 
-  --prefix=<path>                   Set installation prefix to the given path (Gtk/Efl only)
+  --prefix=<path>                   Set installation prefix to the given path (Gtk/Efl/Sling only)
   --makeargs=<arguments>            Optional Makefile flags
   --cmakeargs=<arguments>           Optional CMake flags (e.g. --cmakeargs="-DFOO=bar -DCMAKE_PREFIX_PATH=/usr/local")
 
@@ -242,7 +243,7 @@ if (isCMakeBuild() && !isAnyWindows()) {
 }
 
 my $baseProductDir = baseProductDir();
-if (isAppleWinWebKit() || isWinCairo()) {
+if (isAppleWinWebKit() || isWinCairo() || isSling()) {
     my @featureArgs = cMakeArgsFromFeatures();
     removeCMakeCache(@featureArgs);
 
@@ -259,7 +260,7 @@ if (isAppleWinWebKit() || isWinCairo()) {
     }
     if (exitStatus($result)) {
         my $scriptDir = relativeScriptsDir();
-        if (isAppleWinWebKit() || isWinCairo()) {
+        if (isAppleWinWebKit() || isWinCairo() || isSling()) {
             print "\n\n===== BUILD FAILED ======\n\n";
             print "Please ensure you have run $scriptDir/update-webkit to install dependencies.\n\n";
             print "You can view build errors by checking the BuildLog.htm files located at:\n$baseProductDir/obj/<project>/<config>.\n";

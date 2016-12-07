@@ -44,7 +44,7 @@ class WebProcessProxy;
 
 class WebPasteboardProxy : public IPC::MessageReceiver {
     WTF_MAKE_NONCOPYABLE(WebPasteboardProxy);
-    friend class LazyNeverDestroyed<WebPasteboardProxy>;
+    friend class WTF::LazyNeverDestroyed<WebPasteboardProxy>;
 public:
     static WebPasteboardProxy& singleton();
 

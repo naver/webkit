@@ -45,6 +45,12 @@
 #include <wtf/efl/UniquePtrEfl.h>
 #endif
 
+#if PLATFORM(SLING)
+namespace WTF {
+class ThreadLoop;
+}
+#endif
+
 namespace WTF {
 
 class RunLoop : public FunctionDispatcher {
@@ -117,6 +123,11 @@ public:
         static bool timerFired(void* data);
         Ecore_Timer* m_timer;
         bool m_isRepeating;
+#elif PLATFORM(SLING)
+        static void timerFired(RunLoop*, int32_t ID);
+        int32_t m_ID;
+        double m_intervalInMillis;
+        bool m_isRepeating;
 #elif USE(GLIB_EVENT_LOOP)
         void updateReadyTime();
         GRefPtr<GSource> m_source;
@@ -182,6 +193,11 @@ private:
     GRefPtr<GMainContext> m_mainContext;
     Vector<GRefPtr<GMainLoop>> m_mainLoops;
     GRefPtr<GSource> m_source;
+#elif PLATFORM(SLING)
+    ThreadLoop& m_loop;
+
+    typedef HashMap<int, TimerBase*> TimerMap;
+    TimerMap m_activeTimers;
 #elif USE(GENERIC_EVENT_LOOP)
     void schedule(RefPtr<TimerBase::ScheduledTask>&&);
     void schedule(const LockHolder&, RefPtr<TimerBase::ScheduledTask>&&);

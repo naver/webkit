@@ -37,7 +37,7 @@
 namespace WebKit {
 
 class WebPlatformStrategies : public WebCore::PlatformStrategies, private WebCore::CookiesStrategy, private WebCore::PasteboardStrategy, private WebCore::PluginStrategy {
-    friend class NeverDestroyed<WebPlatformStrategies>;
+    friend class WTF::NeverDestroyed<WebPlatformStrategies>;
 public:
     static void initialize();
     

@@ -83,6 +83,9 @@ public:
 
     bool flushPendingLayerChanges();
     WebCore::CoordinatedGraphicsState& state() { return m_state; }
+#if PLATFORM(SLING)
+    void reset();
+#endif
 
     void syncDisplayState();
 

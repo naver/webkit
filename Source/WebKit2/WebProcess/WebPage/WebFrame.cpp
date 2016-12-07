@@ -148,7 +148,7 @@ PassRefPtr<WebFrame> WebFrame::create(std::unique_ptr<WebFrameLoaderClient> fram
 WebFrame::WebFrame(std::unique_ptr<WebFrameLoaderClient> frameLoaderClient)
     : m_coreFrame(0)
     , m_policyListenerID(0)
-    , m_policyFunction(0)
+    , m_policyFunction(nullptr)
     , m_policyDownloadID(0)
     , m_frameLoaderClient(WTFMove(frameLoaderClient))
     , m_loadListener(0)
@@ -218,7 +218,7 @@ void WebFrame::invalidatePolicyListener()
 
     m_policyDownloadID = { };
     m_policyListenerID = 0;
-    m_policyFunction = 0;
+    m_policyFunction = nullptr;
 }
 
 void WebFrame::didReceivePolicyDecision(uint64_t listenerID, PolicyAction action, uint64_t navigationID, DownloadID downloadID)

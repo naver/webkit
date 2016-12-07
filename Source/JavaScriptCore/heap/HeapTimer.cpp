@@ -197,6 +197,59 @@ void HeapTimer::timerDidFire()
     m_apiLock->unlock();
 }
 
+#elif PLATFORM(SLING)
+HeapTimer::HeapTimer(VM* vm)
+    : m_vm(vm)
+    , m_timerID(0)
+    , m_registeredTimer(false)
+{
+    // Do not register a ThreadLoop timer right away.  We register one when GCActivityCallback
+    // actually calls stop() or startOneShot().
+    //
+    // The problem is that we do not know if the threadloop infrastructure is set up.
+    // JSC runs either in the standalone jsc executable, or as part of WebProcess.
+    // When it runs in WebProcess, threadloop exists and GCActivityCallback's m_enabled (isMainThread)
+    // is true.  GCActivityCallback (same as the EFL code) will call stop/startOneShot.
+    //
+    // When running in the standalone jsc executable, threadloop is not set up and we should not
+    // use timers.  In this case, isMainThread() is false, and GCActivityCallback never starts
+    // the timer.
+}
+
+HeapTimer::~HeapTimer()
+{
+    if (m_registeredTimer)
+        WTF::ThreadLoop::current().removeTimer(m_timerID);
+}
+
+void HeapTimer::ensureTimer()
+{
+    if (!m_registeredTimer) {
+        m_timerID = WTF::ThreadLoop::current().registerTimer();
+        m_registeredTimer = true;
+    }
+}
+
+void HeapTimer::stop()
+{
+    ensureTimer();
+    WTF::ThreadLoop::current().removeTimer(m_timerID);
+}
+
+void HeapTimer::startOneShot(double delay)
+{
+    ensureTimer();
+    WTF::ThreadLoop::current().dispatchTimer([=] {
+            timerFired();
+        }, m_timerID, delay * 1000);
+}
+
+void HeapTimer::timerFired()
+{
+    JSLockHolder locker(m_vm);
+    doWork();
+}
+
 #else
 HeapTimer::HeapTimer(VM* vm)
     : m_vm(vm)

@@ -48,7 +48,7 @@ struct PluginProcessCreationParameters;
 class PluginProcess : public ChildProcess, private WebCore::AudioHardwareListener::Client
 {
     WTF_MAKE_NONCOPYABLE(PluginProcess);
-    friend class NeverDestroyed<PluginProcess>;
+    friend class WTF::NeverDestroyed<PluginProcess>;
 public:
     static PluginProcess& singleton();
 

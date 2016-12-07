@@ -48,12 +48,27 @@
 #include <cairo-gl.h>
 #endif
 
+#if PLATFORM(SLING)
+#include <EGL/eglext.h>
+#include <opengl/GLPlatformContext.h>
+#endif
+
 namespace WebCore {
 
 static EGLDisplay sharedEGLDisplay()
 {
     return PlatformDisplay::sharedDisplay().eglDisplay();
 }
+
+#if defined(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT)
+static const EGLint gContextRobustnessAttributes[] = {
+#if USE(OPENGL_ES_2)
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+#endif
+    EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT, EGL_LOSE_CONTEXT_ON_RESET_EXT,
+    EGL_NONE
+};
+#endif
 
 static const EGLint gContextAttributes[] = {
 #if USE(OPENGL_ES_2)
@@ -107,7 +122,13 @@ std::unique_ptr<GLContextEGL> GLContextEGL::createWindowContext(EGLNativeWindowT
     if (!getEGLConfig(&config, WindowSurface))
         return nullptr;
 
+#if defined(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT)
+    EGLContext context = eglCreateContext(display, config, eglSharingContext, gContextRobustnessAttributes);
+    if (context == EGL_NO_CONTEXT)
+        context = eglCreateContext(display, config, eglSharingContext, gContextAttributes);
+#else
     EGLContext context = eglCreateContext(display, config, eglSharingContext, gContextAttributes);
+#endif
     if (context == EGL_NO_CONTEXT)
         return nullptr;
 
@@ -132,7 +153,13 @@ std::unique_ptr<GLContextEGL> GLContextEGL::createPbufferContext(EGLContext shar
     if (!getEGLConfig(&config, PbufferSurface))
         return nullptr;
 
+#if defined(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT)
+    EGLContext context = eglCreateContext(display, config, sharingContext, gContextRobustnessAttributes);
+    if (context == EGL_NO_CONTEXT)
+        context = eglCreateContext(display, config, sharingContext, gContextAttributes);
+#else
     EGLContext context = eglCreateContext(display, config, sharingContext, gContextAttributes);
+#endif
     if (context == EGL_NO_CONTEXT)
         return nullptr;
 
@@ -157,7 +184,13 @@ std::unique_ptr<GLContextEGL> GLContextEGL::createPixmapContext(EGLContext shari
     if (!getEGLConfig(&config, PixmapSurface))
         return nullptr;
 
+#if defined(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT)
+    EGLContext context = eglCreateContext(display, config, sharingContext, gContextRobustnessAttributes);
+    if (context == EGL_NO_CONTEXT)
+        context = eglCreateContext(display, config, sharingContext, gContextAttributes);
+#else
     EGLContext context = eglCreateContext(display, config, sharingContext, gContextAttributes);
+#endif
     if (context == EGL_NO_CONTEXT)
         return nullptr;
 

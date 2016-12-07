@@ -107,6 +107,16 @@ void CoordinatedDrawingAreaProxy::waitForBackingStoreUpdateOnNextPaint()
     m_hasReceivedFirstUpdate = true;
 }
 
+void CoordinatedDrawingAreaProxy::adjustTransientZoom(double scale, WebCore::FloatPoint origin)
+{
+    m_webPageProxy.process().send(Messages::DrawingArea::AdjustTransientZoom(scale, origin), m_webPageProxy.pageID());
+}
+
+void CoordinatedDrawingAreaProxy::commitTransientZoom(double scale, WebCore::FloatPoint origin)
+{
+    m_webPageProxy.process().send(Messages::DrawingArea::CommitTransientZoom(scale, origin), m_webPageProxy.pageID());
+}
+
 void CoordinatedDrawingAreaProxy::didUpdateBackingStoreState(uint64_t backingStoreStateID, const UpdateInfo& updateInfo, const LayerTreeContext& layerTreeContext)
 {
     ASSERT_ARG(backingStoreStateID, backingStoreStateID <= m_nextBackingStoreStateID);
@@ -247,5 +257,22 @@ void CoordinatedDrawingAreaProxy::updateAcceleratedCompositingMode(const LayerTr
     m_webPageProxy.updateAcceleratedCompositingMode(layerTreeContext);
 }
 
+
+#if PLATFORM(SLING)
+void CoordinatedDrawingAreaProxy::resetCoordinatedGraphicsState()
+{
+    m_coordinatedLayerTreeHostProxy->resetCoordinatedGraphicsState();
+}
+
+void CoordinatedDrawingAreaProxy::requestCoordinatedGraphicsStateAfterReset()
+{
+    m_coordinatedLayerTreeHostProxy->requestCoordinatedGraphicsStateAfterReset();
+}
+
+void CoordinatedDrawingAreaProxy::willCommitCoordinatedGraphicsStateAfterReset()
+{
+    m_webPageProxy.setViewResumePainting();
+}
+#endif
 } // namespace WebKit
 #endif // USE(COORDINATED_GRAPHICS)

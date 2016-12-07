@@ -117,6 +117,9 @@ static const char* vertexTemplate =
     GLSL_DIRECTIVE(ifdef ENABLE_Rect) \
         GLSL_DIRECTIVE(define SamplerType sampler2DRect) \
         GLSL_DIRECTIVE(define SamplerFunction texture2DRect) \
+    GLSL_DIRECTIVE(elif defined(ENABLE_SurfaceTexture)) \
+        GLSL_DIRECTIVE(define SamplerType samplerExternalOES) \
+        GLSL_DIRECTIVE(define SamplerFunction texture2D) \
     GLSL_DIRECTIVE(else) \
         GLSL_DIRECTIVE(define SamplerType sampler2D) \
         GLSL_DIRECTIVE(define SamplerFunction texture2D) \
@@ -135,12 +138,25 @@ static const char* vertexTemplate =
     GLSL_DIRECTIVE(define GAUSSIAN_KERNEL_HALF_WIDTH 11) \
     GLSL_DIRECTIVE(define GAUSSIAN_KERNEL_STEP 0.2)
 
+#define SURFACETEXTURE_DIRECTIVE \
+    GLSL_DIRECTIVE(ifdef ENABLE_SurfaceTexture) \
+        GLSL_DIRECTIVE(extension GL_OES_EGL_image_external : require) \
+    GLSL_DIRECTIVE(endif)
+
+#if PLATFORM(SLING)
+#define PLATFORM_SLING_DIRECTIVE \
+    GLSL_DIRECTIVE(define PLATFORM_SLING 1)
+#else
+#define PLATFORM_SLING_DIRECTIVE
+#endif
 
 static const char* fragmentTemplate =
     RECT_TEXTURE_DIRECTIVE
     ANTIALIASING_TEX_COORD_DIRECTIVE
     BLUR_CONSTANTS
     TEXTURE_SPACE_MATRIX_PRECISION_DIRECTIVE
+    SURFACETEXTURE_DIRECTIVE
+    PLATFORM_SLING_DIRECTIVE
     STRINGIFY(
         precision TextureSpaceMatrixPrecision float;
         uniform mat4 u_textureSpaceMatrix;
@@ -170,6 +186,14 @@ static const char* fragmentTemplate =
 
         vec2 vertexTransformTexCoord() { return v_transformedTexCoord; }
 
+\n#ifdef PLATFORM_SLING\n
+        float colorR(vec4 premultipliedColor) { return premultipliedColor.r / premultipliedColor.a; }
+        float colorG(vec4 premultipliedColor) { return premultipliedColor.g / premultipliedColor.a; }
+        float colorB(vec4 premultipliedColor) { return premultipliedColor.b / premultipliedColor.a; }
+        vec3 colorRGB(vec4 premultipliedColor) { return premultipliedColor.rgb / premultipliedColor.a; }
+        vec4 premultiplyAlpha(vec4 color) { return vec4(clamp(color.rgb, 0., 1.) * color.a, color.a); }
+        vec4 premultiplyAlpha(float r, float g, float b, float a) { return premultiplyAlpha(vec4(r, g, b, a)); }
+\n#endif\n
         void applyTexture(inout vec4 color, vec2 texCoord) { color = SamplerFunction(s_sampler, texCoord); }
         void applyOpacity(inout vec4 color) { color *= u_opacity; }
         void applyAntialiasing(inout vec4 color) { color *= antialias(); }
@@ -177,27 +201,48 @@ static const char* fragmentTemplate =
         void applyGrayscaleFilter(inout vec4 color)
         {
             float amount = 1.0 - u_filterAmount;
+\n#ifndef PLATFORM_SLING\n
             color = vec4((0.2126 + 0.7874 * amount) * color.r + (0.7152 - 0.7152 * amount) * color.g + (0.0722 - 0.0722 * amount) * color.b,
                 (0.2126 - 0.2126 * amount) * color.r + (0.7152 + 0.2848 * amount) * color.g + (0.0722 - 0.0722 * amount) * color.b,
                 (0.2126 - 0.2126 * amount) * color.r + (0.7152 - 0.7152 * amount) * color.g + (0.0722 + 0.9278 * amount) * color.b,
                 color.a);
+\n#else\n
+            color = premultiplyAlpha((0.2126 + 0.7874 * amount) * colorR(color) + (0.7152 - 0.7152 * amount) * colorG(color) + (0.0722 - 0.0722 * amount) * colorB(color),
+                (0.2126 - 0.2126 * amount) * colorR(color) + (0.7152 + 0.2848 * amount) * colorG(color) + (0.0722 - 0.0722 * amount) * colorB(color),
+                (0.2126 - 0.2126 * amount) * colorR(color) + (0.7152 - 0.7152 * amount) * colorG(color) + (0.0722 + 0.9278 * amount) * colorB(color),
+                color.a);
+\n#endif\n
         }
 
         void applySepiaFilter(inout vec4 color)
         {
             float amount = 1.0 - u_filterAmount;
+\n#ifndef PLATFORM_SLING\n
             color = vec4((0.393 + 0.607 * amount) * color.r + (0.769 - 0.769 * amount) * color.g + (0.189 - 0.189 * amount) * color.b,
                 (0.349 - 0.349 * amount) * color.r + (0.686 + 0.314 * amount) * color.g + (0.168 - 0.168 * amount) * color.b,
                 (0.272 - 0.272 * amount) * color.r + (0.534 - 0.534 * amount) * color.g + (0.131 + 0.869 * amount) * color.b,
                 color.a);
+\n#else\n
+            color = premultiplyAlpha((0.393 + 0.607 * amount) * colorR(color) + (0.769 - 0.769 * amount) * colorG(color) + (0.189 - 0.189 * amount) * colorB(color),
+                (0.349 - 0.349 * amount) * colorR(color) + (0.686 + 0.314 * amount) * colorG(color) + (0.168 - 0.168 * amount) * colorB(color),
+                (0.272 - 0.272 * amount) * colorR(color) + (0.534 - 0.534 * amount) * colorG(color) + (0.131 + 0.869 * amount) * colorB(color),
+                color.a);
+\n#endif\n
         }
 
         void applySaturateFilter(inout vec4 color)
         {
+\n#ifndef PLATFORM_SLING\n
             color = vec4((0.213 + 0.787 * u_filterAmount) * color.r + (0.715 - 0.715 * u_filterAmount) * color.g + (0.072 - 0.072 * u_filterAmount) * color.b,
                 (0.213 - 0.213 * u_filterAmount) * color.r + (0.715 + 0.285 * u_filterAmount) * color.g + (0.072 - 0.072 * u_filterAmount) * color.b,
                 (0.213 - 0.213 * u_filterAmount) * color.r + (0.715 - 0.715 * u_filterAmount) * color.g + (0.072 + 0.928 * u_filterAmount) * color.b,
                 color.a);
+\n#else\n
+            color = premultiplyAlpha((0.213 + 0.787 * u_filterAmount) * colorR(color) + (0.715 - 0.715 * u_filterAmount) * colorG(color) + (0.072 - 0.072 * u_filterAmount) * colorB(color),
+                (0.213 - 0.213 * u_filterAmount) * colorR(color) + (0.715 + 0.285 * u_filterAmount) * colorG(color) + (0.072 - 0.072 * u_filterAmount) * colorB(color),
+                (0.213 - 0.213 * u_filterAmount) * colorR(color) + (0.715 - 0.715 * u_filterAmount) * colorG(color) + (0.072 + 0.928 * u_filterAmount) * colorB(color),
+                color.a);
+\n#endif\n
         }
 
         void applyHueRotateFilter(inout vec4 color)
@@ -205,32 +250,55 @@ static const char* fragmentTemplate =
             float pi = 3.14159265358979323846;
             float c = cos(u_filterAmount * pi / 180.0);
             float s = sin(u_filterAmount * pi / 180.0);
+\n#ifndef PLATFORM_SLING\n
             color = vec4(color.r * (0.213 + c * 0.787 - s * 0.213) + color.g * (0.715 - c * 0.715 - s * 0.715) + color.b * (0.072 - c * 0.072 + s * 0.928),
                 color.r * (0.213 - c * 0.213 + s * 0.143) + color.g * (0.715 + c * 0.285 + s * 0.140) + color.b * (0.072 - c * 0.072 - s * 0.283),
                 color.r * (0.213 - c * 0.213 - s * 0.787) +  color.g * (0.715 - c * 0.715 + s * 0.715) + color.b * (0.072 + c * 0.928 + s * 0.072),
                 color.a);
+\n#else\n
+            color = premultiplyAlpha(colorR(color) * (0.213 + c * 0.787 - s * 0.213) + colorG(color) * (0.715 - c * 0.715 - s * 0.715) + colorB(color) * (0.072 - c * 0.072 + s * 0.928),
+                colorR(color) * (0.213 - c * 0.213 + s * 0.143) + colorG(color) * (0.715 + c * 0.285 + s * 0.140) + colorB(color) * (0.072 - c * 0.072 - s * 0.283),
+                colorR(color) * (0.213 - c * 0.213 - s * 0.787) + colorG(color) * (0.715 - c * 0.715 + s * 0.715) + colorB(color) * (0.072 + c * 0.928 + s * 0.072),
+                color.a);
+\n#endif\n
         }
 
         float invert(float n) { return (1.0 - n) * u_filterAmount + n * (1.0 - u_filterAmount); }
         void applyInvertFilter(inout vec4 color)
         {
+\n#ifndef PLATFORM_SLING\n
             color = vec4(invert(color.r), invert(color.g), invert(color.b), color.a);
+\n#else\n
+            color = premultiplyAlpha(invert(colorR(color)), invert(colorG(color)), invert(colorB(color)), color.a);
+\n#endif\n
         }
 
         void applyBrightnessFilter(inout vec4 color)
         {
+\n#ifndef PLATFORM_SLING\n
             color = vec4(color.rgb * u_filterAmount, color.a);
+\n#else\n
+            color = premultiplyAlpha(vec4(colorRGB(color) * u_filterAmount, color.a));
+\n#endif\n
         }
 
         float contrast(float n) { return (n - 0.5) * u_filterAmount + 0.5; }
         void applyContrastFilter(inout vec4 color)
         {
+\n#ifndef PLATFORM_SLING\n
             color = vec4(contrast(color.r), contrast(color.g), contrast(color.b), color.a);
+\n#else\n
+            color = premultiplyAlpha(contrast(colorR(color)), contrast(colorG(color)), contrast(colorB(color)), color.a);
+\n#endif\n
         }
 
         void applyOpacityFilter(inout vec4 color)
         {
+\n#ifndef PLATFORM_SLING\n
             color = vec4(color.r, color.g, color.b, color.a * u_filterAmount);
+\n#else\n
+            color = premultiplyAlpha(colorR(color), colorG(color), colorB(color), color.a * u_filterAmount);
+\n#endif\n
         }
 
         vec4 sampleColorAtRadius(float radius, vec2 texCoord)
@@ -275,6 +343,13 @@ static const char* fragmentTemplate =
             color = sourceOver(contentColor, color);
         }
 
+\n#ifdef PLATFORM_SLING\n
+        void applySurfaceTexture(inout vec4 color, vec2 texCoord)
+        {
+            color = texture2D(s_sampler, texCoord);
+        }
+\n#endif\n
+
         void applySolidColor(inout vec4 color) { color *= u_color; }
 
         void main(void)
@@ -296,6 +371,9 @@ static const char* fragmentTemplate =
             applyBlurFilterIfNeeded(color, texCoord);
             applyAlphaBlurIfNeeded(color, texCoord);
             applyContentTextureIfNeeded(color, texCoord);
+\n#ifdef PLATFORM_SLING\n
+            applySurfaceTextureIfNeeded(color, texCoord);
+\n#endif\n
             gl_FragColor = color;
         }
     );
@@ -323,6 +401,10 @@ Ref<TextureMapperShaderProgram> TextureMapperShaderProgram::create(Ref<GraphicsC
     SET_APPLIER_FROM_OPTIONS(BlurFilter);
     SET_APPLIER_FROM_OPTIONS(AlphaBlur);
     SET_APPLIER_FROM_OPTIONS(ContentTexture);
+#if PLATFORM(SLING)
+    SET_APPLIER_FROM_OPTIONS(SurfaceTexture);
+#endif
+
 
     StringBuilder vertexShaderBuilder;
     vertexShaderBuilder.append(optionsApplierBuilder.toString());

@@ -29,6 +29,9 @@
 #include <WebKit/WKBundleInitialize.h>
 
 extern "C"
+#if OS(WINDOWS)
+__declspec(dllexport)
+#endif
 void WKBundleInitialize(WKBundleRef bundle, WKTypeRef initializationUserData)
 {
     WTR::InjectedBundle::singleton().initialize(bundle, initializationUserData);

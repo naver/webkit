@@ -61,6 +61,8 @@
 #if PLATFORM(COCOA)
 #include "ObjCObjectGraph.h"
 #include "PDFPlugin.h"
+#elif PLATFORM(SLING)
+#include <unistd.h>
 #endif
 
 #if ENABLE(SEC_ITEM_SHIM)
@@ -614,6 +616,8 @@ void WebProcessProxy::didFinishLaunching(ProcessLauncher* launcher, IPC::Connect
     xpc_connection_t xpcConnection = connection()->xpcConnection();
     ASSERT(xpcConnection);
     m_throttler.didConnectToProcess(xpc_connection_get_pid(xpcConnection));
+#elif PLATFORM(SLING)
+    m_throttler.didConnectToProcess(getpid());
 #endif
 }
 

@@ -177,7 +177,14 @@ def forward_declarations_and_headers(receiver):
     non_template_wtf_types = frozenset([
         'String',
     ])
+	
+    # NOTE: msvc build workaround
+    import sys
+    
+    if sys.platform == 'win32' or sys.platform == 'cygwin':
+        headers.add('<tuple>')
 
+    # NOTE: end msvc build workaround
     for message in receiver.messages:
         if message.reply_parameters != None and message.has_attribute(DELAYED_ATTRIBUTE):
             headers.add('<wtf/ThreadSafeRefCounted.h>')

@@ -417,6 +417,9 @@ public:
     void clearSelection();
     void restoreSelectionInFocusedEditableElement();
 
+#if PLATFORM(SLING)
+    void setViewResumePainting();
+#endif
     void setViewNeedsDisplay(const WebCore::Region&);
     void requestScroll(const WebCore::FloatPoint& scrollPosition, const WebCore::IntPoint& scrollOrigin, bool isProgrammaticScroll);
     
@@ -598,6 +601,12 @@ public:
     void handleInputMethodKeydown(bool& handled);
     void confirmComposition(const String&);
     void setComposition(const String&, Vector<WebCore::CompositionUnderline>&, int);
+    void cancelComposition();
+#endif
+#if PLATFORM(SLING)
+    void setComposition(const String&, Vector<WebCore::CompositionUnderline>&, int32_t selectionStart, int32_t selectionEnd, int32_t replacementStart, int32_t replacementEnd);
+    void confirmComposition(const String&);
+    void finishComposition();
     void cancelComposition();
 #endif
 
@@ -904,7 +913,7 @@ public:
     void beginPrinting(WebFrameProxy*, const PrintInfo&);
     void endPrinting();
     void computePagesForPrinting(WebFrameProxy*, const PrintInfo&, PassRefPtr<ComputedPagesCallback>);
-#if PLATFORM(COCOA)
+#if PLATFORM(COCOA) || PLATFORM(SLING)
     void drawRectToImage(WebFrameProxy*, const PrintInfo&, const WebCore::IntRect&, const WebCore::IntSize&, PassRefPtr<ImageCallback>);
     void drawPagesToPDF(WebFrameProxy*, const PrintInfo&, uint32_t first, uint32_t count, PassRefPtr<DataCallback>);
 #if PLATFORM(IOS)
@@ -1078,6 +1087,10 @@ public:
     void logSampledDiagnosticMessage(const String& message, const String& description);
     void logSampledDiagnosticMessageWithResult(const String& message, const String& description, uint32_t result);
     void logSampledDiagnosticMessageWithValue(const String& message, const String& description, const String& value);
+    
+#if PLATFORM(SLING)
+    void updateActivityState(bool isForeground);
+#endif
 
 #if ENABLE(WIRELESS_PLAYBACK_TARGET) && !PLATFORM(IOS)
     void addPlaybackTargetPickerClient(uint64_t);
@@ -1341,6 +1354,13 @@ private:
     void didPerformDictionaryLookup(const WebCore::DictionaryPopupInfo&);
 #endif
 
+#if PLATFORM(SLING)
+    // Speech.
+    void getIsSpeaking(bool&);
+    void speak(const String&);
+    void stopSpeaking();
+#endif
+
 #if PLATFORM(MAC)
     bool appleMailPaginationQuirkEnabled();
 #endif
@@ -1485,6 +1505,10 @@ private:
     void contentFilterDidBlockLoadForFrame(const WebCore::ContentFilterUnblockHandler&, uint64_t frameID);
 #endif
 
+#if PLATFORM(SLING)
+    void hasTouchEventHandlers(bool hasTouchHandlers);
+#endif
+
     uint64_t generateNavigationID();
 
     WebPreferencesStore preferencesStore() const;
@@ -1619,6 +1643,9 @@ private:
     bool m_allowsMediaDocumentInlinePlayback { false };
     bool m_alwaysRunsAtForegroundPriority;
     ProcessThrottler::ForegroundActivityToken m_activityToken;
+#elif PLATFORM(SLING)
+    ProcessThrottler::ForegroundActivityToken m_foregroundActivityToken;
+    ProcessThrottler::BackgroundActivityToken m_backgroundActivityToken;
 #endif
     bool m_initialCapitalizationEnabled;
     Ref<WebBackForwardList> m_backForwardList;

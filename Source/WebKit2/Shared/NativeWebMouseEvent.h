@@ -56,6 +56,8 @@ public:
 #elif PLATFORM(EFL)
     template <typename EvasEventMouse>
     NativeWebMouseEvent(const EvasEventMouse*, const WebCore::AffineTransform&, const WebCore::AffineTransform&);
+#else
+    NativeWebMouseEvent(WebMouseEvent&&);
 #endif
 
 #if USE(APPKIT)

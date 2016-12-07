@@ -22,5 +22,8 @@
 messages -> CoordinatedLayerTreeHostProxy {
 
     CommitCoordinatedGraphicsState(struct WebCore::CoordinatedGraphicsState state)
+#if PLATFORM(SLING)
+    WillCommitCoordinatedGraphicsStateAfterReset(uint64_t stateID)
+#endif
 }
 #endif

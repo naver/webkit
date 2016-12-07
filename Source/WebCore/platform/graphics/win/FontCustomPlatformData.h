@@ -27,6 +27,11 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>
 
+#if USE(CAIRO_DWRITEFONT)
+#include "COMPtr.h"
+#include <dwrite.h>
+#endif
+
 typedef struct CGFont* CGFontRef;
 
 namespace WebCore {
@@ -38,11 +43,21 @@ class SharedBuffer;
 struct FontCustomPlatformData {
     WTF_MAKE_NONCOPYABLE(FontCustomPlatformData);
 public:
+#if !USE(CAIRO_DWRITEFONT)
     FontCustomPlatformData(HANDLE fontReference, const String& name)
         : m_fontReference(fontReference)
         , m_name(name)
     {
     }
+#else
+    FontCustomPlatformData(HANDLE fontReference, const String& name, IDWriteFontFile* fontFile, DWRITE_FONT_FACE_TYPE faceType)
+        : m_fontReference(fontReference)
+        , m_name(name)
+        , m_fontFile(AdoptCOM, fontFile)
+        , m_faceType(faceType)
+    {
+    }
+#endif
 
     ~FontCustomPlatformData();
 
@@ -52,6 +67,10 @@ public:
 
     HANDLE m_fontReference;
     String m_name;
+#if USE(CAIRO_DWRITEFONT)
+    COMPtr<IDWriteFontFile> m_fontFile;
+    DWRITE_FONT_FACE_TYPE m_faceType;
+#endif
 };
 
 std::unique_ptr<FontCustomPlatformData> createFontCustomPlatformData(SharedBuffer&);

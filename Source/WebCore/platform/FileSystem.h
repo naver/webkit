@@ -101,7 +101,7 @@ typedef unsigned PlatformModuleVersion;
 #if USE(GLIB) && !PLATFORM(EFL) && !PLATFORM(WIN)
 typedef GFileIOStream* PlatformFileHandle;
 const PlatformFileHandle invalidPlatformFileHandle = 0;
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN)
 typedef HANDLE PlatformFileHandle;
 // FIXME: -1 is INVALID_HANDLE_VALUE, defined in <winbase.h>. Chromium tries to
 // avoid using Windows headers in headers.  We'd rather move this into the .cpp.

@@ -38,9 +38,37 @@ using namespace std;
 
 namespace WebCore {
 
+#if USE(CAIRO_DWRITEFONT)
+static cairo_scaled_font_t* createScaledGdiFont(const FontPlatformData& platformData)
+{
+    LOGFONTW lf;
+    GetObjectW(platformData.hfont(), sizeof(LOGFONTW), &lf);
+    cairo_font_face_t* fontFace = cairo_win32_font_face_create_for_logfontw(&lf);
+
+    cairo_matrix_t sizeMatrix, ctm;
+    cairo_matrix_init_identity(&ctm);
+    cairo_matrix_init_scale(&sizeMatrix, platformData.size(), platformData.size());
+
+    static cairo_font_options_t* fontOptions = 0;
+    if (!fontOptions) {
+        fontOptions = cairo_font_options_create();
+        cairo_font_options_set_antialias(fontOptions, CAIRO_ANTIALIAS_SUBPIXEL);
+    }
+
+    cairo_scaled_font_t* scaledGdiFont = cairo_scaled_font_create(fontFace, &sizeMatrix, &ctm, fontOptions);
+    cairo_font_face_destroy(fontFace);
+
+    return scaledGdiFont;
+}
+#endif
+
 void FontPlatformData::platformDataInit(HFONT font, float size, HDC hdc, WCHAR* faceName)
 {
+#if !USE(CAIRO_DWRITEFONT)
     cairo_font_face_t* fontFace = cairo_win32_font_face_create_for_hfont(font);
+#else
+    cairo_font_face_t* fontFace = cairo_dwrite_font_face_create_for_hfont(font);
+#endif
 
     cairo_matrix_t sizeMatrix, ctm;
     cairo_matrix_init_identity(&ctm);
@@ -88,6 +116,10 @@ FontPlatformData::FontPlatformData(GDIObject<HFONT> font, cairo_font_face_t* fon
 
     m_scaledFont = adoptRef(cairo_scaled_font_create(fontFace, &fontMatrix, &ctm, options));
     cairo_font_options_destroy(options);
+
+#if USE(CAIRO_DWRITEFONT)
+    m_scaledGdiFont = createScaledGdiFont(*this);
+#endif
 }
 
 bool FontPlatformData::platformIsEqual(const FontPlatformData& other) const

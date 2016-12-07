@@ -43,7 +43,7 @@ WebCoordinatedSurface::Handle::Handle()
 void WebCoordinatedSurface::Handle::encode(IPC::ArgumentEncoder& encoder) const
 {
     encoder << m_size << m_flags;
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     encoder << m_graphicsSurfaceToken;
     if (m_graphicsSurfaceToken.isValid())
         return;
@@ -57,7 +57,7 @@ bool WebCoordinatedSurface::Handle::decode(IPC::ArgumentDecoder& decoder, Handle
         return false;
     if (!decoder.decode(handle.m_flags))
         return false;
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     if (!decoder.decode(handle.m_graphicsSurfaceToken))
         return false;
     if (handle.m_graphicsSurfaceToken.isValid())
@@ -72,7 +72,7 @@ bool WebCoordinatedSurface::Handle::decode(IPC::ArgumentDecoder& decoder, Handle
 RefPtr<WebCoordinatedSurface> WebCoordinatedSurface::create(const IntSize& size, CoordinatedSurface::Flags flags)
 {
     RefPtr<WebCoordinatedSurface> surface;
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     surface = createWithSurface(size, flags);
 #endif
 
@@ -82,7 +82,7 @@ RefPtr<WebCoordinatedSurface> WebCoordinatedSurface::create(const IntSize& size,
     return surface;
 }
 
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
 RefPtr<WebCoordinatedSurface> WebCoordinatedSurface::createWithSurface(const IntSize& size, CoordinatedSurface::Flags flags)
 {
     GraphicsSurface::Flags surfaceFlags =
@@ -105,7 +105,7 @@ RefPtr<WebCoordinatedSurface> WebCoordinatedSurface::createWithSurface(const Int
 
 std::unique_ptr<GraphicsContext> WebCoordinatedSurface::createGraphicsContext(const IntRect& rect)
 {
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     if (isBackedByGraphicsSurface())
         return m_graphicsSurface->beginPaint(rect, 0 /* Write without retaining pixels*/);
 #endif
@@ -128,7 +128,7 @@ WebCoordinatedSurface::WebCoordinatedSurface(const IntSize& size, CoordinatedSur
 {
 }
 
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
 WebCoordinatedSurface::WebCoordinatedSurface(const WebCore::IntSize& size, CoordinatedSurface::Flags flags, RefPtr<WebCore::GraphicsSurface> surface)
     : CoordinatedSurface(size, flags)
     , m_graphicsSurface(surface)
@@ -147,7 +147,7 @@ WebCoordinatedSurface::~WebCoordinatedSurface()
 
 RefPtr<WebCoordinatedSurface> WebCoordinatedSurface::create(const Handle& handle)
 {
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     if (handle.graphicsSurfaceToken().isValid()) {
         GraphicsSurface::Flags surfaceFlags = 0;
         if (handle.m_flags & SupportsAlpha)
@@ -170,7 +170,7 @@ bool WebCoordinatedSurface::createHandle(Handle& handle)
     handle.m_size = m_size;
     handle.m_flags = m_flags;
 
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     handle.m_graphicsSurfaceToken = m_graphicsSurface ? m_graphicsSurface->exportToken() : GraphicsSurfaceToken();
     if (handle.m_graphicsSurfaceToken.isValid())
         return true;
@@ -192,7 +192,7 @@ void WebCoordinatedSurface::copyToTexture(RefPtr<WebCore::BitmapTexture> passTex
 {
     RefPtr<BitmapTexture> texture(passTexture);
 
-#if USE(GRAPHICS_SURFACE)
+#if USE(GRAPHICS_SURFACE) && !PLATFORM(SLING)
     if (isBackedByGraphicsSurface()) {
         RefPtr<BitmapTextureGL> textureGL = toBitmapTextureGL(texture.get());
         if (textureGL) {

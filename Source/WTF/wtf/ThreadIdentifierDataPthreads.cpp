@@ -36,7 +36,7 @@
 
 #include "Threading.h"
 
-#if OS(HURD)
+#if OS(HURD) || OS(ANDROID)
 // PTHREAD_KEYS_MAX is not defined in bionic nor in Hurd, so explicitly define it here.
 #define PTHREAD_KEYS_MAX 1024
 #else

@@ -96,7 +96,12 @@ EGLConfig EGLConfigSelector::createConfig(EGLint expectedSurfaceType)
         return 0;
     }
 
+#if !COMPILER(MSVC)
     EGLConfig configs[numConfigs];
+#else
+    Vector<EGLConfig> configsBuffer(numConfigs);
+    EGLConfig* configs = configsBuffer.data();
+#endif
     eglGetConfigs(m_sharedDisplay, configs, numConfigs, &numConfigs);
 
     if (!numConfigs) {

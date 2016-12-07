@@ -699,6 +699,7 @@ static void setWindowText(HWND dialog, UINT field, IPropertyBagPtr statistics, c
     setWindowText(dialog, field, _bstr_t(valueStr.utf8().data()));
 }
 
+#if USE(CF)
 static void setWindowText(HWND dialog, UINT field, CFDictionaryRef dictionary, CFStringRef key, UINT& total)
 {
     CFNumberRef countNum = static_cast<CFNumberRef>(CFDictionaryGetValue(dictionary, key));
@@ -711,6 +712,7 @@ static void setWindowText(HWND dialog, UINT field, CFDictionaryRef dictionary, C
     setWindowText(dialog, field, static_cast<UINT>(count));
     total += count;
 }
+#endif
 
 static void updateStatistics(HWND dialog)
 {

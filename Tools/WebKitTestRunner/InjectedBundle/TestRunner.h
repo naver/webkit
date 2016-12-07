@@ -47,6 +47,8 @@ typedef RunLoop::Timer<TestRunner> PlatformTimerRef;
 }
 #elif PLATFORM(EFL)
 typedef Ecore_Timer* PlatformTimerRef;
+#elif OS(WINDOWS)
+typedef UINT_PTR PlatformTimerRef;
 #endif
 
 namespace WTR {

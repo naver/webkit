@@ -591,7 +591,7 @@ void ArgumentCoder<WebCore::GraphicsSurfaceToken>::encode(ArgumentEncoder& encod
 #if OS(DARWIN)
     encoder << Attachment(token.frontBufferHandle, MACH_MSG_TYPE_MOVE_SEND);
     encoder << Attachment(token.backBufferHandle, MACH_MSG_TYPE_MOVE_SEND);
-#elif OS(LINUX)
+#elif OS(LINUX) || PLATFORM(SLING)
     encoder << token.frontBufferHandle;
 #endif
 }
@@ -606,7 +606,7 @@ bool ArgumentCoder<WebCore::GraphicsSurfaceToken>::decode(ArgumentDecoder& decod
         return false;
 
     token = GraphicsSurfaceToken(frontAttachment.port(), backAttachment.port());
-#elif OS(LINUX)
+#elif OS(LINUX) || PLATFORM(SLING)
     if (!decoder.decode(token.frontBufferHandle))
         return false;
 #endif

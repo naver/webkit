@@ -248,9 +248,9 @@ String contextMenuItemTagLookUpInDictionary(const String& selectedString)
 {
 #if USE(CF)
     RetainPtr<CFStringRef> selectedCFString = truncatedStringForLookupMenuItem(selectedString).createCFString();
-    return formatLocalizedString(WEB_UI_STRING("Look Up “%@”", "Look Up context menu item with selected word"), selectedCFString.get());
+    return formatLocalizedString(WEB_UI_STRING("Look Up `%@`", "Look Up context menu item with selected word"), selectedCFString.get());
 #else
-    return WEB_UI_STRING("Look Up “<selection>”", "Look Up context menu item with selected word").replace("<selection>", truncatedStringForLookupMenuItem(selectedString));
+    return WEB_UI_STRING("Look Up `<selection>`", "Look Up context menu item with selected word").replace("<selection>", truncatedStringForLookupMenuItem(selectedString));
 #endif
 }
 

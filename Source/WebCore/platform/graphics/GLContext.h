@@ -52,6 +52,9 @@ public:
     static std::unique_ptr<GLContext> createOffscreenContext(GLContext* sharing = 0);
     static GLContext* getCurrent();
     static GLContext* sharingContext();
+#if PLATFORM(SLING)
+    static bool destroySharingContextIfLost();
+#endif
 
     GLContext();
     virtual ~GLContext();

@@ -300,7 +300,7 @@ messages -> WebPage LegacyReceiver {
     BeginPrinting(uint64_t frameID, struct WebKit::PrintInfo printInfo)
     EndPrinting()
     ComputePagesForPrinting(uint64_t frameID, struct WebKit::PrintInfo printInfo, uint64_t callbackID)
-#if PLATFORM(COCOA)
+#if PLATFORM(COCOA) || PLATFORM(SLING)
     DrawRectToImage(uint64_t frameID, struct WebKit::PrintInfo printInfo, WebCore::IntRect rect, WebCore::IntSize imageSize, uint64_t callbackID)
     DrawPagesToPDF(uint64_t frameID, struct WebKit::PrintInfo printInfo, uint32_t first, uint32_t count, uint64_t callbackID)
 #if PLATFORM(IOS)
@@ -384,6 +384,12 @@ messages -> WebPage LegacyReceiver {
 #if PLATFORM(EFL)
     ConfirmComposition(String compositionString)
     SetComposition(String compositionString, Vector<WebCore::CompositionUnderline> underlines, uint64_t cursorPosition)
+    CancelComposition()
+#endif
+#if PLATFORM(SLING)
+    SetComposition(String text, Vector<WebCore::CompositionUnderline> underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementStart, uint64_t replacementEnd)
+    ConfirmComposition(String text)
+    FinishComposition()
     CancelComposition()
 #endif
 #if USE(COORDINATED_GRAPHICS_MULTIPROCESS)

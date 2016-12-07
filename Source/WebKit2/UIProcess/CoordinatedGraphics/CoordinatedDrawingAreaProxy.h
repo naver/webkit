@@ -56,6 +56,15 @@ public:
 
     CoordinatedLayerTreeHostProxy& coordinatedLayerTreeHostProxy() const { return *m_coordinatedLayerTreeHostProxy.get(); }
 
+#if PLATFORM(SLING)
+    void resetCoordinatedGraphicsState();
+    void requestCoordinatedGraphicsStateAfterReset();
+    void willCommitCoordinatedGraphicsStateAfterReset();
+
+    void scrollBegin();
+    void scrollEnd();
+#endif
+
     WebCore::IntRect viewportVisibleRect() const { return contentsRect(); }
     WebCore::IntRect contentsRect() const;
     void updateViewport();
@@ -63,6 +72,9 @@ public:
     WebPageProxy& page() { return m_webPageProxy; }
     
     void dispatchAfterEnsuringDrawing(std::function<void(CallbackBase::Error)>) override;
+
+    virtual void adjustTransientZoom(double, WebCore::FloatPoint) override;
+    virtual void commitTransientZoom(double, WebCore::FloatPoint) override;
 
 private:
     // DrawingAreaProxy

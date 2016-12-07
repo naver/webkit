@@ -34,6 +34,8 @@
 
 #if PLATFORM(X11)
 #include "EGLXSurface.h"
+#else
+#include "EGLPbufferSurface.h"
 #endif
 
 namespace WebCore {
@@ -120,8 +122,7 @@ std::unique_ptr<GLPlatformSurface> EGLOffScreenSurface::createOffScreenSurface(S
 #if PLATFORM(X11)
     return std::make_unique<EGLPixmapSurface>(attributes);
 #else
-    UNUSED_PARAM(attributes);
-    return nullptr;
+    return std::make_unique<EGLPbufferSurface>(attributes);
 #endif
 }
 
@@ -150,7 +151,11 @@ bool EGLOffScreenSurface::isCurrentDrawable() const
 
 PlatformSurfaceConfig EGLOffScreenSurface::configuration()
 {
+#if PLATFORM(X11)    
     return m_configSelector->pixmapContextConfig();
+#else
+    return m_configSelector->surfaceContextConfig();    
+#endif
 }
 
 void EGLOffScreenSurface::destroy()

@@ -46,6 +46,10 @@
 #include <WebKit/WKBaseMac.h>
 #endif
 
+#if defined(BUILDING_SLING__)
+#include <WebKit/WKBaseSling.h>
+#endif
+
 /* WebKit2 shared types */
 
 typedef uint32_t WKTypeID;

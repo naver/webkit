@@ -83,6 +83,11 @@ public:
     // Currently, QQuickWebPage::updatePaintNode() locks the main thread before calling both methods.
     void purgeGLResources();
 
+#if PLATFORM(SLING)
+    void deleteGLResourcesThenDestroyOnMainThread();
+    void setGraphicsContextWasDestroyedElsewhere();
+#endif
+
     bool isActive() const { return m_isActive; }
     void setActive(bool);
 
