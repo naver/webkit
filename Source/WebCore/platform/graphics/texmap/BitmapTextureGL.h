@@ -30,6 +30,12 @@
 #include "IntSize.h"
 #include "TextureMapperGL.h"
 
+#if ENABLE(ACCELERATED_2D_CANVAS)
+#if USE(CAIRO)
+#include "PlatformContextCairo.h"
+#endif
+#endif
+
 namespace WebCore {
 
 class TextureMapper;
@@ -72,6 +78,9 @@ public:
 
     GC3Dint internalFormat() const { return m_internalFormat; }
 
+#if ENABLE(ACCELERATED_2D_CANVAS)
+    void updateContents(TextureMapper&, GraphicsLayer*, const IntRect& target, const IntPoint& offset, UpdateContentsFlag, float scale = 1) override;
+#endif
 private:
 
     Platform3DObject m_id;
@@ -83,6 +92,15 @@ private:
     bool m_shouldClear;
     ClipStack m_clipStack;
     RefPtr<GraphicsContext3D> m_context3D;
+
+#if ENABLE(ACCELERATED_2D_CANVAS)
+#if USE(CAIRO)
+    RefPtr<cairo_surface_t> m_surface;
+    PlatformContextCairo m_platformContext;
+#endif
+    std::unique_ptr<GraphicsContext> m_context;
+    void resetContext();
+#endif
 
     BitmapTextureGL();
 

@@ -48,6 +48,21 @@
 #define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
 #endif
 
+#if ENABLE(ACCELERATED_2D_CANVAS)
+#include "GLContext.h"
+#include "GraphicsLayer.h"
+#include "TextureMapperGL.h"
+#if USE(CAIRO)
+#include <cairo-gl.h>
+#endif
+
+#if USE(OPENGL_ES_2)
+#include <GLES2/gl2.h>
+#else
+#include "OpenGLShims.h"
+#endif
+#endif
+
 namespace WebCore {
 
 BitmapTextureGL* toBitmapTextureGL(BitmapTexture* texture)
@@ -69,6 +84,11 @@ BitmapTextureGL::BitmapTextureGL(PassRefPtr<GraphicsContext3D> context3D, const 
     , m_type(GL_UNSIGNED_INT_8_8_8_8_REV)
 #else
     , m_type(GraphicsContext3D::UNSIGNED_BYTE)
+#endif
+#if ENABLE(ACCELERATED_2D_CANVAS)
+#if USE(CAIRO)
+    , m_platformContext(0)
+#endif
 #endif
 {
     if (flags & FBOAttachment)
@@ -124,6 +144,10 @@ void BitmapTextureGL::didReset()
     m_context3D->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE);
 
     m_context3D->texImage2DDirect(GraphicsContext3D::TEXTURE_2D, 0, m_internalFormat, m_textureSize.width(), m_textureSize.height(), 0, m_format, m_type, 0);
+
+#if ENABLE(ACCELERATED_2D_CANVAS)
+    resetContext();
+#endif
 }
 
 void BitmapTextureGL::updateContentsNoSwizzle(const void* srcData, const IntRect& targetRect, const IntPoint& sourceOffset, int bytesPerLine, unsigned bytesPerPixel, Platform3DObject glFormat)
@@ -203,6 +227,64 @@ void BitmapTextureGL::updateContents(Image* image, const IntRect& targetRect, co
 
     updateContents(imageData, targetRect, offset, bytesPerLine, updateContentsFlag);
 }
+
+#if ENABLE(ACCELERATED_2D_CANVAS)
+void BitmapTextureGL::updateContents(TextureMapper& textureMapper, GraphicsLayer* sourceLayer, const IntRect& targetRect, const IntPoint& offset, UpdateContentsFlag updateContentsFlag, float scale)
+{
+#if USE(CAIRO)
+    auto* previousActiveContext = GLContext::getCurrent();
+    GLContext::sharingContext()->makeContextCurrent();
+#endif
+    GraphicsContext& context = *m_context;
+    context.clearRect(m_shouldClear ? FloatRect(FloatPoint(), m_textureSize) : targetRect);
+    context.save();
+    context.setImageInterpolationQuality(textureMapper.imageInterpolationQuality());
+    context.setTextDrawingMode(textureMapper.textDrawingMode());
+
+    m_shouldClear = false;
+
+    IntRect sourceRect(targetRect);
+    sourceRect.setLocation(offset);
+    sourceRect.scale(1 / scale);
+    context.applyDeviceScaleFactor(scale);
+
+    IntSize translation = offset - targetRect.location();
+    context.translate(-translation.width(), -translation.height());
+
+    sourceLayer->paintGraphicsLayerContents(context, sourceRect);
+    context.restore();
+#if USE(CAIRO)
+    cairo_surface_flush(m_surface.get());
+    previousActiveContext->makeContextCurrent();
+#endif
+}
+
+void BitmapTextureGL::resetContext()
+{
+#if USE(CAIRO)
+    auto* previousActiveContext = GLContext::getCurrent();
+    auto* context = GLContext::sharingContext();
+    context->makeContextCurrent();
+
+    cairo_device_t* device = context->cairoDevice();
+
+    // Thread-awareness is a huge performance hit on non-Intel drivers.
+    cairo_gl_device_set_thread_aware(device, FALSE);
+
+    m_surface = adoptRef(cairo_gl_surface_create_for_texture(device, CAIRO_CONTENT_COLOR_ALPHA, m_id, m_textureSize.width(), m_textureSize.height()));
+
+    if (cairo_surface_status(m_surface.get()) != CAIRO_STATUS_SUCCESS)
+        return;
+
+    cairoSurfaceSetDeviceScale(m_surface.get(), 1.0, 1.0);
+
+    RefPtr<cairo_t> cr = adoptRef(cairo_create(m_surface.get()));
+    m_platformContext.setCr(cr.get());
+    m_context = std::make_unique<GraphicsContext>(&m_platformContext);
+    previousActiveContext->makeContextCurrent();
+#endif
+}
+#endif
 
 static unsigned getPassesRequiredForFilter(FilterOperation::OperationType type)
 {
