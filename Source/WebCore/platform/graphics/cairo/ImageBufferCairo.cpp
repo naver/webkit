@@ -172,7 +172,7 @@ void ImageBufferData::createCairoGLSurface()
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    glTexImage2D(GL_TEXTURE_2D, 0 /* level */, GL_RGBA, m_size.width(), m_size.height(), 0 /* border */, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0 /* level */, 0x93A1/*GL_BGRA8_EXT*/, m_size.width(), m_size.height(), 0 /* border */, 0x93A1/*GL_BGRA8_EXT*/, GL_UNSIGNED_BYTE, 0);
 
     GLContext* context = GLContext::sharingContext();
     cairo_device_t* device = context->cairoDevice();

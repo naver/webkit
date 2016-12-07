@@ -300,6 +300,7 @@ bool ValidateES2TexImageParameters(Context *context, GLenum target, GLint level,
             }
             break;
           case GL_BGRA_EXT:
+          case GL_BGRA8_EXT:
             switch (type)
             {
               case GL_UNSIGNED_BYTE:
